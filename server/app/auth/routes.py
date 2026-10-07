@@ -17,7 +17,7 @@ def login():
     if form.validate_on_submit():
         user = User.authenticate(form.login.data, form.password.data)
         if user is not None:
-            login_user(user, remember=form.remember.data)
+            login_user(user)
             flash(f"Қош келдіңіз, {user.username}!", "success")
             return redirect(safe_next_url(url_for("main.dashboard")))
         flash("Логин немесе құпиясөз қате.", "danger")
@@ -45,4 +45,4 @@ def register():
 def logout():
     logout_user()
     flash("Жүйеден шықтыңыз.", "info")
-    return redirect(url_for("auth.login"))
+    return redirect(url_for("main.home"))

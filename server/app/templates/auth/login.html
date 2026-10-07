@@ -1,20 +1,15 @@
-{% extends "base.html" %}
+{% extends "auth/_layout.html" %}
 {% import "_macros.html" as ui with context %}
 {% block title %}Кіру{% endblock %}
 
-{% block content %}
-<div class="card card-narrow">
-  <h1>Жүйеге кіру</h1>
-  <p class="muted">Жатақхана орындарын басқару жүйесі</p>
-  <form method="post" novalidate>
-    {{ form.hidden_tag() }}
-    {{ ui.field(form.login, autofocus=true, autocomplete="username") }}
-    {{ ui.field(form.password, autocomplete="current-password") }}
-    {{ ui.checkbox(form.remember) }}
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary">Кіру</button>
-    </div>
-  </form>
-  <p class="muted">Аккаунтыңыз жоқ па? <a href="{{ url_for('auth.register') }}">Тіркелу</a></p>
-</div>
+{% block heading %}
+  <span>Қош келдіңіз</span>
+  <span class="dim">жүйеге кіріңіз</span>
 {% endblock %}
+
+{% block fields %}
+  {{ ui.field(form.login, compact=true, autofocus=true, autocomplete="username") }}
+  {{ ui.field(form.password, compact=true, autocomplete="current-password") }}
+{% endblock %}
+
+{% block submit %}Кіру{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Жатақхана орындарын басқару{% endblock %}
+{% block body_class %}page-home{% endblock %}
+
+{# The home page has no section menu: only the way in (or back to work). #}
+{% block topbar_nav %}
+  {% if current_user.is_authenticated %}
+    <div class="account">
+      <a class="btn btn-pill" href="{{ url_for('main.dashboard') }}">Басқару тақтасына өту</a>
+      {{ ui.profile_link() }}
+    </div>
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{% block main %}
+<main class="lp-hero">
+  <div class="lp-stage">
+    {# Decorative widgets in the corners; hidden on small screens. #}
+    <div class="float float-ring" aria-hidden="true">
+      <div class="widget">
+        <div class="ring">
+          <svg viewBox="0 0 120 120">
+            <circle class="ring-track" cx="60" cy="60" r="50"/>
+            <circle class="ring-value" cx="60" cy="60" r="50" pathLength="100" style="--p: {{ stats.occupancy_percent }}"/>
+          </svg>
+          <strong>{{ stats.occupancy_percent }}%</strong>
+        </div>
+        <div class="widget-title">Толтырылуы</div>
+        <div class="widget-caption">{{ stats.free_places }} бос орын</div>
+      </div>
+      <div class="tile">{{ ui.icon('bed') }}</div>
+    </div>
+
+    <div class="float float-contract" aria-hidden="true">
+      <div class="tile tile-check">{{ ui.icon('check') }}</div>
+      <div class="sheet">
+        <div class="sheet-head">
+          <strong>Келісімшарт</strong>
+          <span class="badge badge-active">Қолданыста</span>
+        </div>
+        <div class="sheet-line"></div>
+        <div class="sheet-line"></div>
+        <div class="sheet-line"></div>
+        <div class="sheet-foot"><span class="pdf-chip">PDF</span> қол қойылған көшірме</div>
+      </div>
+    </div>
+
+    <div class="float float-floors" aria-hidden="true">
+      <div class="folder">
+        <div class="folder-title">Қабаттар бойынша</div>
+        {% for item in floors[:3] %}
+          <div class="folder-card">
+            <div class="floor-head">
+              <strong>{{ item.floor }}-қабат</strong>
+              <span>{{ item.occupied }} / {{ item.capacity }} орын</span>
+            </div>
+            <div class="floor-bar">
+              <div class="bar"><span style="width: {{ item.percent }}%"></span></div>
+              <span>{{ item.percent }}%</span>
+            </div>
+          </div>
+        {% else %}
+          <div class="folder-card">Әзірге бөлмелер қосылмаған.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Anonymous silhouettes only: one per resident, at most four. #}
+    {% set shown = [stats.occupied, 4]|min %}
+    <div class="float float-residents" aria-hidden="true">
+      <div class="widget">
+        <div class="widget-title">Тұрғындар</div>
+        {% if stats.occupied %}
+          <div class="avatars">
+            {% for _ in range(shown) %}
+              <span class="avatar">{{ ui.icon('user') }}</span>
+            {% endfor %}
+            {% if stats.occupied > shown %}
+              <span class="avatar avatar-more">+{{ stats.occupied - shown }}</span>
+            {% endif %}
+          </div>
+          <div class="widget-caption">{{ stats.occupied }} студент тұрады</div>
+        {% else %}
+          <div class="widget-caption">Әзірге тұрғындар жоқ</div>
+        {% endif %}
+        {% if stats.unassigned_students %}
+          <span class="badge badge-pending">{{ stats.unassigned_students }} студент бөлме күтуде</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="lp-center">
+      <div class="tile tile-logo">{{ ui.icon('key') }}</div>
+      <h1>
+        <span>Бөлме, студент, төлем</span>
+        <span class="dim">бәрі бір жерде</span>
+      </h1>
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block footer %}{% endblock %}

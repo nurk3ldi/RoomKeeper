@@ -1,12 +1,56 @@
 {# Shared UI pieces. Import with: {% import "_macros.html" as ui with context %} #}
 
-{% macro field(f, hint=None) %}
+{# compact=true shows the label as a placeholder (it stays readable to
+   screen readers), for forms that should look as light as possible.
+   Password fields get a show/hide button, wired up by
+   static/js/password-toggle.js. #}
+{% macro field(f, hint=None, compact=False) %}
+  {% set attrs = dict(kwargs, placeholder=f.label.text) if compact else kwargs %}
   <div class="field{% if f.errors %} has-error{% endif %}">
-    {{ f.label }}
-    {{ f(**kwargs) }}
+    {{ f.label(class="sr-only") if compact else f.label }}
+    {% if f.type == 'PasswordField' %}
+      <div class="password-wrap">
+        {{ f(**attrs) }}
+        <button type="button" class="password-toggle" hidden aria-pressed="false"
+                aria-label="Құпиясөзді көрсету"
+                data-show="Құпиясөзді көрсету" data-hide="Құпиясөзді жасыру">
+          {{ icon('eye', 'line-icon') }}
+        </button>
+      </div>
+    {% else %}
+      {{ f(**attrs) }}
+    {% endif %}
     {% if hint %}<small class="hint">{{ hint }}</small>{% endif %}
     {% for error in f.errors %}<small class="error">{{ error }}</small>{% endfor %}
   </div>
+{% endmacro %}
+
+{% macro icon(name, css="tile-icon") %}
+  <svg class="{{ css }}" viewBox="0 0 24 24" aria-hidden="true">
+    {% if name == 'bed' %}
+      <path d="M3 18v-7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7M3 14h18M3 18v2M21 18v2M7 9V6h10v3"/>
+    {% elif name == 'user' %}
+      <circle cx="12" cy="9" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/>
+    {% elif name == 'key' %}
+      <circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l3 3M13.5 9.5l2 2"/>
+    {% elif name == 'check' %}
+      <path d="M5 12.5l4.5 4.5L19 7"/>
+    {% elif name == 'eye' %}
+      {# The slash is drawn only while the password is visible. #}
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+      <path class="eye-slash" d="M4 4l16 16"/>
+    {% endif %}
+  </svg>
+{% endmacro %}
+
+{# Round icon in the header that opens the profile page (where the
+   log-out button lives). #}
+{% macro profile_link() %}
+  <a class="profile-link{% if request.endpoint == 'main.profile' %} active{% endif %}"
+     href="{{ url_for('main.profile') }}" aria-label="Менің бетім"
+     title="{{ current_user.username }} · {{ role_labels[current_user.role] }}">
+    {{ icon('user', 'line-icon') }}
+  </a>
 {% endmacro %}
 
 {% macro checkbox(f) %}

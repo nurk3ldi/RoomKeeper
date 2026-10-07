@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 
 from app import db
 from app.models import PAYMENT_STATUSES, Contract, Payment, Room
-from app.services import dormitory_stats
+from app.services import dormitory_stats, floor_occupancy
 
 
 def test_room_occupancy_is_calculated_from_students(app, make):
@@ -121,6 +121,19 @@ def test_dormitory_stats(app, make):
     assert stats["payments"]["overdue"] == {"count": 1, "amount": 500.0}
     assert stats["payments"]["paid"] == {"count": 1, "amount": 700.0}
     assert stats["payments"]["pending"] == {"count": 0, "amount": 0.0}
+
+
+def test_floor_occupancy_groups_rooms_by_floor(app, make):
+    upper = make.room(floor=2, capacity=3)
+    make.room(floor=2, capacity=1)
+    make.room(floor=1, capacity=2)
+    make.student(room_id=upper)
+
+    with app.app_context():
+        assert floor_occupancy() == [
+            {"floor": 1, "capacity": 2, "occupied": 0, "percent": 0},
+            {"floor": 2, "capacity": 4, "occupied": 1, "percent": 25},
+        ]
 
 
 def test_stats_on_empty_database(app):

@@ -5,6 +5,7 @@
 {% block content %}
 <div class="page-head">
   <h1>Менің бетім</h1>
+  {{ ui.post_button(url_for('auth.logout'), 'Жүйеден шығу', 'btn btn-danger') }}
 </div>
 
 <div class="columns">
@@ -19,7 +20,7 @@
   </section>
 
   <section class="card">
-    <h2>Жатақхана</h2>
+    <h2>{{ 'Жатақхана' if student or not current_user.is_admin else 'Әкімші құқықтары' }}</h2>
     {% if student %}
       <dl class="details">
         <dt>Студент</dt><dd>{{ student.full_name }}</dd>
@@ -35,6 +36,9 @@
           {% endif %}
         </dd>
       </dl>
+    {% elif current_user.is_admin %}
+      <p class="muted">Сіз жатақхана жүйесінің әкімшісісіз: бөлмелерді, студенттерді, келісімшарттар мен төлемдерді басқарасыз, пайдаланушылардың рөлін өзгерте аласыз.</p>
+      <a class="btn" href="{{ url_for('main.dashboard') }}">Басқару тақтасына өту</a>
     {% else %}
       <p class="muted">Аккаунтыңыз студент жазбасымен байланыстырылмаған. Келісімшарт пен төлемдерді көру үшін әкімшіге хабарласыңыз.</p>
     {% endif %}

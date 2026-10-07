@@ -6,12 +6,20 @@ from sqlalchemy.orm import joinedload
 from app import db
 from app.main import bp
 from app.models import STATUS_OVERDUE, Contract, Payment, Room
-from app.services import dormitory_stats
+from app.services import dormitory_stats, floor_occupancy
 
 DASHBOARD_ROWS = 5
 
 
 @bp.get("/")
+def home():
+    """Public landing page; shows only aggregate occupancy numbers."""
+    return render_template(
+        "main/home.html", stats=dormitory_stats(), floors=floor_occupancy()
+    )
+
+
+@bp.get("/dashboard")
 @login_required
 def dashboard():
     free_rooms = db.session.scalars(

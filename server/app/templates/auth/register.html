@@ -1,21 +1,17 @@
-{% extends "base.html" %}
+{% extends "auth/_layout.html" %}
 {% import "_macros.html" as ui with context %}
 {% block title %}Тіркелу{% endblock %}
 
-{% block content %}
-<div class="card card-narrow">
-  <h1>Тіркелу</h1>
-  <p class="muted">Жаңа аккаунт «Пайдаланушы» рөлімен ашылады.</p>
-  <form method="post" novalidate>
-    {{ form.hidden_tag() }}
-    {{ ui.field(form.username, hint="3–32 таңба: латын әріптері, цифрлар, нүкте, астын сызу.", autofocus=true, autocomplete="username") }}
-    {{ ui.field(form.email, type="email", autocomplete="email") }}
-    {{ ui.field(form.password, hint="Кемінде 8 таңба.", autocomplete="new-password") }}
-    {{ ui.field(form.confirm, autocomplete="new-password") }}
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary">Тіркелу</button>
-    </div>
-  </form>
-  <p class="muted">Аккаунтыңыз бар ма? <a href="{{ url_for('auth.login') }}">Кіру</a></p>
-</div>
+{% block heading %}
+  <span>Тіркелу</span>
+  <span class="dim">жаңа аккаунт ашыңыз</span>
 {% endblock %}
+
+{% block fields %}
+  {{ ui.field(form.username, compact=true, autofocus=true, autocomplete="username") }}
+  {{ ui.field(form.email, compact=true, type="email", autocomplete="email") }}
+  {{ ui.field(form.password, compact=true, autocomplete="new-password") }}
+  {{ ui.field(form.confirm, compact=true, autocomplete="new-password") }}
+{% endblock %}
+
+{% block submit %}Тіркелу{% endblock %}

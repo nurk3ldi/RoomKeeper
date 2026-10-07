@@ -9,14 +9,14 @@ from app.models import ROLE_ADMIN, Contract, Room, Student, User
 
 DEMO_ADMIN = ("admin", "admin@roomkeeper.kz", "Admin123!")
 DEMO_USERS = [
-    ("aigerim", "aigerim@roomkeeper.kz", "User123!"),
+    ("miras", "miras@roomkeeper.kz", "User123!"),
     ("daulet", "daulet@roomkeeper.kz", "User123!"),
 ]
 # Monthly price by room capacity.
 DEMO_PRICES = {2: Decimal("35000"), 3: Decimal("28000"), 4: Decimal("22000")}
 DEMO_UNASSIGNED = 4
 DEMO_STUDENTS = [
-    "Айгерім Сейітқызы",
+    "Мирас Сейітұлы",
     "Нұрлан Әбдіқадыров",
     "Дана Жұмабекова",
     "Ерлан Тоқтаров",
@@ -117,22 +117,13 @@ def create_demo_data():
 
 
 def register(app):
-    @app.cli.command("init-db")
-    @click.option("--drop", is_flag=True, help="Drop all tables first (deletes data).")
-    def init_db(drop):
-        """Create the database tables."""
-        if drop:
-            click.confirm("This deletes ALL data. Continue?", abort=True)
-            db.drop_all()
-        db.create_all()
-        click.echo("Database tables are ready.")
-
     @app.cli.command("seed")
     def seed():
         """Fill an empty database with demo accounts and data."""
         if db.session.scalar(select(func.count(User.id))):
             raise click.ClickException(
-                "The database already has users. Run `init-db --drop` first."
+                "The database already has users. Reset it first: "
+                "`flask --app run db downgrade base`, then `db upgrade`."
             )
         create_demo_data()
         click.echo(f"Demo data created. Admin: {DEMO_ADMIN[0]} / {DEMO_ADMIN[2]}")

@@ -47,10 +47,9 @@ def test_method_not_allowed_uses_generic_error_page(client):
     assert "405" in response.get_data(as_text=True)
 
 
-def test_init_db_and_seed_commands(app):
+def test_seed_command(app):
     runner = app.test_cli_runner()
 
-    assert "ready" in runner.invoke(args=["init-db"]).output
     result = runner.invoke(args=["seed"])
     assert result.exit_code == 0, result.output
 
@@ -78,13 +77,13 @@ def test_seeded_accounts_can_log_in(app):
     admin = app.test_client()
     response = admin.post("/auth/login", data={"login": "admin", "password": "Admin123!"})
     assert response.status_code == 302
-    for path in ("/", "/rooms/", "/students/", "/contracts/", "/payments/", "/users/"):
+    for path in ("/", "/dashboard", "/rooms/", "/students/", "/contracts/", "/payments/", "/users/"):
         assert admin.get(path).status_code == 200
 
     student = app.test_client()
-    student.post("/auth/login", data={"login": "aigerim", "password": "User123!"})
+    student.post("/auth/login", data={"login": "miras", "password": "User123!"})
     html = student.get("/profile").get_data(as_text=True)
-    assert "Айгерім Сейітқызы" in html and "Келісімшарт №RK-" in html
+    assert "Мирас Сейітұлы" in html and "Келісімшарт №RK-" in html
     assert student.get("/students/").status_code == 403
 
 

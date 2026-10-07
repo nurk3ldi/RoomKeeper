@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{# Login and registration: the home page look, reduced to a single card
+   holding the logo tile, a headline and a small form. Children fill
+   heading, fields, submit. #}
+{% import "_macros.html" as ui with context %}
+{% block body_class %}page-auth{% endblock %}
+
+{% block main %}
+<main class="lp-hero">
+  <div class="lp-stage">
+    <form method="post" class="auth-card" novalidate>
+      <div class="tile tile-logo">{{ ui.icon('key') }}</div>
+      <h1>{% block heading %}{% endblock %}</h1>
+      {{ form.hidden_tag() }}
+      {% block fields %}{% endblock %}
+      <button type="submit" class="btn btn-primary">{% block submit %}{% endblock %}</button>
+    </form>
+  </div>
+</main>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/password-toggle.js') }}" defer></script>
+{% endblock %}

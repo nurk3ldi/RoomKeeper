@@ -105,7 +105,6 @@ class LoginForm(BaseForm):
         "Логин немесе email", [required(), length(max=120)], filters=[strip]
     )
     password = PasswordField("Құпиясөз", [required()])
-    remember = BooleanField("Мені есте сақта")
 
 
 class RegisterForm(BaseForm):

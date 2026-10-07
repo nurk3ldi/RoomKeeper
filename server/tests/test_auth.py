@@ -23,6 +23,34 @@ def test_anonymous_is_redirected_to_login(client):
     assert response.headers["Location"] == "/auth/login?next=/rooms/?floor%3D2"
 
 
+def test_auth_pages_are_minimal(client):
+    for path, fields in (
+        ("/auth/login", ("login", "password")),
+        ("/auth/register", ("username", "email", "password", "confirm")),
+    ):
+        html = client.get(path).get_data(as_text=True)
+
+        assert html.startswith("<!doctype html>")
+        assert html.count("<input") == len(fields)  # CSRF is off in tests
+        for name in fields:
+            assert f'<label class="sr-only" for="{name}">' in html
+            assert f'name="{name}" placeholder="' in html
+        assert 'class="footer"' not in html and "<nav" not in html
+
+
+def test_password_fields_have_a_show_hide_button(client):
+    login = client.get("/auth/login").get_data(as_text=True)
+    register = client.get("/auth/register").get_data(as_text=True)
+
+    assert login.count('class="password-toggle" hidden') == 1
+    assert register.count('class="password-toggle" hidden') == 2
+    for html in (login, register):
+        assert 'src="/static/js/password-toggle.js"' in html
+        # The fields are masked until the visitor asks otherwise.
+        assert 'type="text"' not in html.split("password-wrap", 1)[1].split("</div>", 1)[0]
+    assert client.get("/static/js/password-toggle.js").status_code == 200
+
+
 def test_register_creates_plain_user(app, client):
     response = register(client, email="New@Example.com")
     assert response.status_code == 302
@@ -64,8 +92,8 @@ def test_register_rejects_taken_username_and_email(client, make):
 def test_login_with_username_or_email(client, make, identifier):
     make.user("user")
     response = client.post("/auth/login", data={"login": identifier, "password": PASSWORD})
-    assert response.status_code == 302
-    assert client.get("/").status_code == 200
+    assert response.headers["Location"] == "/dashboard"
+    assert client.get("/dashboard").status_code == 200
 
 
 def test_login_with_wrong_password(client, make):
@@ -73,16 +101,16 @@ def test_login_with_wrong_password(client, make):
     response = client.post("/auth/login", data={"login": "user", "password": "wrong-password"})
     assert response.status_code == 200
     assert "Логин немесе құпиясөз қате" in response.get_data(as_text=True)
-    assert client.get("/").status_code == 302
+    assert client.get("/dashboard").status_code == 302
 
 
 @pytest.mark.parametrize(
     "target, expected",
     [
         ("/rooms/", "/rooms/"),
-        ("https://evil.example/", "/"),
-        ("//evil.example/", "/"),
-        ("javascript:alert(1)", "/"),
+        ("https://evil.example/", "/dashboard"),
+        ("//evil.example/", "/dashboard"),
+        ("javascript:alert(1)", "/dashboard"),
     ],
 )
 def test_login_only_follows_local_next(client, make, target, expected):
@@ -93,10 +121,23 @@ def test_login_only_follows_local_next(client, make, target, expected):
     assert response.headers["Location"] == expected
 
 
+def test_profile_icon_in_header_and_logout_only_on_profile(user_client, make):
+    make.room(number="101")
+    pages = {path: user_client.get(path).get_data(as_text=True) for path in ("/", "/dashboard", "/rooms/", "/profile")}
+
+    for path, html in pages.items():
+        # The header shows an icon with the account in its tooltip, not the name.
+        assert 'title="user · Пайдаланушы"' in html
+        assert ('action="/auth/logout"' in html) == (path == "/profile")
+    assert 'class="profile-link active"' in pages["/profile"]
+    assert 'class="profile-link"' in pages["/rooms/"]
+    assert "Жүйеден шығу</button>" in pages["/profile"]
+
+
 def test_logout_requires_post(user_client):
     assert user_client.get("/auth/logout").status_code == 405
-    assert user_client.post("/auth/logout").status_code == 302
-    assert user_client.get("/").status_code == 302
+    assert user_client.post("/auth/logout").headers["Location"] == "/"
+    assert user_client.get("/dashboard").status_code == 302
 
 
 @pytest.mark.parametrize(
@@ -134,7 +175,7 @@ def test_plain_user_can_browse_rooms_but_sees_no_admin_controls(user_client, mak
     assert "Студенттер" not in listing
 
 
-@pytest.mark.parametrize("path", ["/", "/rooms/", "/students/", "/contracts/", "/payments/", "/users/", "/profile"])
+@pytest.mark.parametrize("path", ["/", "/dashboard", "/rooms/", "/students/", "/contracts/", "/payments/", "/users/", "/profile"])
 def test_admin_can_open_every_section(admin_client, path):
     assert admin_client.get(path).status_code == 200
 

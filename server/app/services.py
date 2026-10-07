@@ -4,6 +4,24 @@ from app import db
 from app.models import PAYMENT_STATUSES, Payment, Room, Student
 
 
+def floor_occupancy():
+    """Places and residents per floor, lowest floor first."""
+    rows = db.session.execute(
+        select(Room.floor, func.sum(Room.capacity), func.sum(Room.occupied))
+        .group_by(Room.floor)
+        .order_by(Room.floor)
+    )
+    return [
+        {
+            "floor": floor,
+            "capacity": int(capacity),
+            "occupied": int(occupied),
+            "percent": round(occupied * 100 / capacity) if capacity else 0,
+        }
+        for floor, capacity, occupied in rows
+    ]
+
+
 def dormitory_stats():
     """Occupancy and payment totals shared by the dashboard and the API."""
     rooms, capacity = db.session.execute(

@@ -10,8 +10,8 @@ from tests.conftest import login
 
 def form_data(**overrides):
     data = {
-        "full_name": "Айгерім Сейітқызы",
-        "email": "aigerim@example.com",
+        "full_name": "Мирас Сейітұлы",
+        "email": "miras@example.com",
         "phone": "+7 (701) 123-45-67",
         "course": "2",
         "room_id": "0",
@@ -156,6 +156,15 @@ def test_linked_user_sees_own_data_on_profile(app, make):
     html = stranger.get("/profile").get_data(as_text=True)
     assert "студент жазбасымен байланыстырылмаған" in html
     assert "MINE-1" not in html
+
+
+def test_admin_profile_describes_admin_rights(admin_client):
+    html = admin_client.get("/profile").get_data(as_text=True)
+
+    assert "Әкімші құқықтары" in html
+    assert "Сіз жатақхана жүйесінің әкімшісісіз" in html
+    # The advice meant for unlinked students makes no sense for an admin.
+    assert "әкімшіге хабарласыңыз" not in html
 
 
 def test_account_can_be_linked_to_only_one_student(admin_client, make):
