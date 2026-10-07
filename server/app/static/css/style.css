@@ -184,7 +184,7 @@ form.inline { display: inline; }
 .filters select,
 .filters .btn { padding: 10px 12px; }
 .filters .btn { padding-inline: 18px; }
-.card-form .form-actions { margin-top: 10px; padding-top: 20px; border-top: 1px solid var(--border); }
+.card-form .form-actions { justify-content: flex-end; margin-top: 10px; padding-top: 20px; border-top: 1px solid var(--border); }
 .card-form .form-actions .btn { padding: 10px 22px; }
 @media (max-width: 900px) {
   .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

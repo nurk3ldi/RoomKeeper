@@ -203,7 +203,7 @@ pip install -r requirements-dev.txt
 python -m pytest
 ```
 
-170 тест: модельдер, авторизация мен рөлдер, CRUD, валидация, іздеу/сүзу/беттеу,
+171 тест: модельдер, авторизация мен рөлдер, CRUD, валидация, іздеу/сүзу/беттеу,
 файл жүктеу қауіпсіздігі, API, қате беттері, миграциялар. Тесттер жадтағы SQLite базасында
 жүреді — негізгі дерекқорға әсер етпейді.
 
@@ -227,7 +227,7 @@ python -m pytest
 | **3. Басқару тақтасы (әкімші)** ![Басқару тақтасы](docs/screenshots/03-dashboard.png) | **4. Бөлмелер: толтырылу, сүзгі, беттеу** ![Бөлмелер](docs/screenshots/04-rooms.png) |
 | **5. Студенттер: іздеу және сұрыптау** ![Студенттер](docs/screenshots/05-students-search.png) | **6. Келісімшарт және төлемдер күйі** ![Келісімшарт](docs/screenshots/06-contract-detail.png) |
 | **7. Келісімшарт формасы, PDF жүктеу** ![PDF жүктеу](docs/screenshots/07-contract-upload.png) | **8. Мерзімі өткен төлемдер** ![Төлемдер](docs/screenshots/08-payments-overdue.png) |
-| **9. Пайдаланушының жеке беті** ![Менің бетім](docs/screenshots/09-user-profile.png) | **10. 404 қате беті** ![404](docs/screenshots/10-error-404.png) |
+| **9. Пайдаланушының жеке беті** ![Менің бетім](docs/screenshots/09-user-profile.png) | **10. 404 және 500 қате беттері** ![404 және 500](docs/screenshots/10-error-pages.png) |
 
 ## Демо сценарий (2–3 минут)
 

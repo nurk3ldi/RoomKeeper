@@ -12,6 +12,22 @@ def test_custom_404_page(client):
     assert response.mimetype == "text/html"
 
 
+def test_browser_tab_title_is_the_same_everywhere(admin_client, make):
+    room_id = make.room(number="101")
+    student_id = make.student(name="Titled Student", room_id=room_id)
+    contract_id = make.contract(student_id, number="T-1")
+    pages = ["/", "/dashboard", "/rooms/", f"/rooms/{room_id}", "/rooms/new", "/students/",
+             f"/students/{student_id}", f"/contracts/{contract_id}", "/payments/", "/users/",
+             "/profile", "/no/such/page"]
+
+    for path in pages:
+        assert "<title>RoomKeeper</title>" in admin_client.get(path).get_data(as_text=True), path
+
+    guest = admin_client.application.test_client()
+    for path in ("/auth/login", "/auth/register"):
+        assert "<title>RoomKeeper</title>" in guest.get(path).get_data(as_text=True), path
+
+
 def test_custom_500_page_and_rollback(app, client):
     app.config["PROPAGATE_EXCEPTIONS"] = False
 
