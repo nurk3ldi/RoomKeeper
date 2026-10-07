@@ -11,11 +11,9 @@
 <div class="card card-form">
   <form method="post" novalidate>
     {{ form.hidden_tag() }}
-    <div class="field-row">
+    <div class="form-grid">
       {{ ui.field(form.number, hint="Мысалы: 101 немесе 2-A") }}
       {{ ui.field(form.floor) }}
-    </div>
-    <div class="field-row">
       {{ ui.field(form.capacity, hint="1-ден 6-ға дейін") }}
       {{ ui.field(form.monthly_price) }}
     </div>

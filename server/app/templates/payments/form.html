@@ -11,13 +11,13 @@
 <div class="card card-form">
   <form method="post" novalidate>
     {{ form.hidden_tag() }}
-    {{ ui.field(form.contract_id) }}
-    <div class="field-row">
+    <div class="form-grid">
+      {{ ui.field(form.contract_id, span=2) }}
       {{ ui.field(form.amount) }}
       {{ ui.field(form.due_date) }}
+      {{ ui.field(form.paid_at, hint="Төлем әлі түспесе, бос қалдырыңыз.") }}
+      {{ ui.field(form.comment, span=3) }}
     </div>
-    {{ ui.field(form.paid_at, hint="Төлем әлі түспесе, бос қалдырыңыз.") }}
-    {{ ui.field(form.comment) }}
     <div class="form-actions">
       <button type="submit" class="btn btn-primary">Сақтау</button>
       <a class="btn" href="{{ cancel_url }}">Болдырмау</a>

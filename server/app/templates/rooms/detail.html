@@ -18,11 +18,21 @@
   <section class="card">
     <h2>Мәліметтер</h2>
     <dl class="details">
-      <dt>Қабат</dt><dd>{{ room.floor }}</dd>
-      <dt>Орын саны</dt><dd>{{ room.capacity }}</dd>
-      <dt>Бос емес</dt><dd>{{ room.occupied }}</dd>
-      <dt>Бос орын</dt><dd>{{ room.free_places }}</dd>
-      <dt>Айлық баға</dt><dd>{{ room.monthly_price|money }}</dd>
+      <div>
+        <dt>Қабат</dt><dd>{{ room.floor }}</dd>
+      </div>
+      <div>
+        <dt>Орын саны</dt><dd>{{ room.capacity }}</dd>
+      </div>
+      <div>
+        <dt>Бос емес</dt><dd>{{ room.occupied }}</dd>
+      </div>
+      <div>
+        <dt>Бос орын</dt><dd>{{ room.free_places }}</dd>
+      </div>
+      <div>
+        <dt>Айлық баға</dt><dd>{{ room.monthly_price|money }}</dd>
+      </div>
     </dl>
   </section>
 

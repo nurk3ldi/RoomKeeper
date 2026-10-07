@@ -12,10 +12,18 @@
   <section class="card">
     <h2>Аккаунт</h2>
     <dl class="details">
-      <dt>Логин</dt><dd>{{ current_user.username }}</dd>
-      <dt>Email</dt><dd>{{ current_user.email }}</dd>
-      <dt>Рөлі</dt><dd><span class="badge badge-{{ current_user.role }}">{{ role_labels[current_user.role] }}</span></dd>
-      <dt>Тіркелген күні</dt><dd>{{ current_user.created_at|date }}</dd>
+      <div>
+        <dt>Логин</dt><dd>{{ current_user.username }}</dd>
+      </div>
+      <div>
+        <dt>Email</dt><dd>{{ current_user.email }}</dd>
+      </div>
+      <div>
+        <dt>Рөлі</dt><dd><span class="badge badge-{{ current_user.role }}">{{ role_labels[current_user.role] }}</span></dd>
+      </div>
+      <div>
+        <dt>Тіркелген күні</dt><dd>{{ current_user.created_at|date }}</dd>
+      </div>
     </dl>
   </section>
 
@@ -23,18 +31,26 @@
     <h2>{{ 'Жатақхана' if student or not current_user.is_admin else 'Әкімші құқықтары' }}</h2>
     {% if student %}
       <dl class="details">
-        <dt>Студент</dt><dd>{{ student.full_name }}</dd>
-        <dt>Курс</dt><dd>{{ student.course or '—' }}</dd>
-        <dt>Телефон</dt><dd>{{ student.phone or '—' }}</dd>
-        <dt>Бөлме</dt>
-        <dd>
-          {% if student.room %}
-            <a href="{{ url_for('rooms.detail', room_id=student.room.id) }}">№{{ student.room.number }}</a>,
-            {{ student.room.floor }}-қабат
-          {% else %}
-            <span class="muted">берілмеген</span>
-          {% endif %}
-        </dd>
+        <div>
+          <dt>Студент</dt><dd>{{ student.full_name }}</dd>
+        </div>
+        <div>
+          <dt>Курс</dt><dd>{{ student.course or '—' }}</dd>
+        </div>
+        <div>
+          <dt>Телефон</dt><dd>{{ student.phone or '—' }}</dd>
+        </div>
+        <div>
+          <dt>Бөлме</dt>
+          <dd>
+            {% if student.room %}
+              <a href="{{ url_for('rooms.detail', room_id=student.room.id) }}">№{{ student.room.number }}</a>,
+              {{ student.room.floor }}-қабат
+            {% else %}
+              <span class="muted">берілмеген</span>
+            {% endif %}
+          </dd>
+        </div>
       </dl>
     {% elif current_user.is_admin %}
       <p class="muted">Сіз жатақхана жүйесінің әкімшісісіз: бөлмелерді, студенттерді, келісімшарттар мен төлемдерді басқарасыз, пайдаланушылардың рөлін өзгерте аласыз.</p>

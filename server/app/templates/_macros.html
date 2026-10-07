@@ -2,11 +2,12 @@
 
 {# compact=true shows the label as a placeholder (it stays readable to
    screen readers), for forms that should look as light as possible.
+   span=N makes the field N columns wide inside a .form-grid.
    Password fields get a show/hide button, wired up by
    static/js/password-toggle.js. #}
-{% macro field(f, hint=None, compact=False) %}
+{% macro field(f, hint=None, compact=False, span=None) %}
   {% set attrs = dict(kwargs, placeholder=f.label.text) if compact else kwargs %}
-  <div class="field{% if f.errors %} has-error{% endif %}">
+  <div class="field{% if span %} span-{{ span }}{% endif %}{% if f.errors %} has-error{% endif %}">
     {{ f.label(class="sr-only") if compact else f.label }}
     {% if f.type == 'PasswordField' %}
       <div class="password-wrap">

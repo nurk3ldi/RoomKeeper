@@ -16,13 +16,23 @@
   <section class="card">
     <h2>Мәліметтер</h2>
     <dl class="details">
-      <dt>Студент</dt>
-      <dd><a href="{{ url_for('students.detail', student_id=contract.student_id) }}">{{ contract.student.full_name }}</a></dd>
-      <dt>Мерзімі</dt><dd>{{ contract.start_date|date }} – {{ contract.end_date|date }}</dd>
-      <dt>Айлық төлем</dt><dd>{{ contract.monthly_fee|money }}</dd>
-      <dt>Төленді</dt><dd>{{ contract.total_paid|money }} / {{ contract.total_due|money }}</dd>
-      <dt>Қарыз</dt>
-      <dd>{% if contract.debt %}<strong>{{ contract.debt|money }}</strong>{% else %}жоқ{% endif %}</dd>
+      <div>
+        <dt>Студент</dt>
+        <dd><a href="{{ url_for('students.detail', student_id=contract.student_id) }}">{{ contract.student.full_name }}</a></dd>
+      </div>
+      <div>
+        <dt>Мерзімі</dt><dd>{{ contract.start_date|date }} – {{ contract.end_date|date }}</dd>
+      </div>
+      <div>
+        <dt>Айлық төлем</dt><dd>{{ contract.monthly_fee|money }}</dd>
+      </div>
+      <div>
+        <dt>Төленді</dt><dd>{{ contract.total_paid|money }} / {{ contract.total_due|money }}</dd>
+      </div>
+      <div>
+        <dt>Қарыз</dt>
+        <dd>{% if contract.debt %}<strong>{{ contract.debt|money }}</strong>{% else %}жоқ{% endif %}</dd>
+      </div>
     </dl>
   </section>
 
