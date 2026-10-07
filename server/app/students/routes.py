@@ -20,9 +20,8 @@ def save_student(student, form):
     student.email = form.email.data
     student.phone = form.phone.data or None
     student.course = form.course.data
-    # 0 is the "none" option of both selects.
+    # 0 is the "none" option of the room select.
     student.room_id = form.room_id.data or None
-    student.user_id = form.user_id.data or None
 
 
 @bp.get("/")
@@ -104,10 +103,13 @@ def delete(student_id):
     student = db.get_or_404(Student, student_id)
     name = student.full_name
     pdf_files = [contract.pdf_filename for contract in student.contracts]
+    # The login goes with the student; an admin's own account is kept.
+    if student.user is not None and not student.user.is_admin:
+        db.session.delete(student.user)
     db.session.delete(student)
     db.session.commit()
     # Files go only after the rows are really gone.
     for pdf_file in pdf_files:
         delete_contract_pdf(pdf_file)
-    flash(f"{name} және оның келісімшарттары өшірілді.", "success")
+    flash(f"{name}, оның аккаунты мен келісімшарттары өшірілді.", "success")
     return redirect(url_for("students.index"))

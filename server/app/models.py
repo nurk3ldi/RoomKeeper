@@ -106,16 +106,18 @@ class Student(db.Model):
 
     @classmethod
     def link_account(cls, user, full_name):
-        """Give a newly registered account its student record.
+        """Give an account its student record, so the two always go together.
 
         A record an admin already entered under the same email is reused
         (and keeps the admin's spelling of the name); otherwise a new one
-        is created.
+        is created. A record that already has an account is left alone.
         """
         student = cls.find_by_email(user.email)
         if student is None:
             student = cls(full_name=full_name, email=user.email)
             db.session.add(student)
+        elif student.user_id is not None:
+            return None
         student.user = user
         return student
 

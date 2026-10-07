@@ -61,7 +61,7 @@
               <td>{{ student.created_at|date }}</td>
               <td class="actions">
                 <a class="btn btn-small" href="{{ url_for('students.edit', student_id=student.id) }}">Өзгерту</a>
-                {{ ui.post_button(url_for('students.delete', student_id=student.id), 'Өшіру', 'btn btn-small btn-danger', student.full_name ~ ' және оның келісімшарттары мен төлемдері өшіріледі. Жалғастырасыз ба?') }}
+                {{ ui.post_button(url_for('students.delete', student_id=student.id), 'Өшіру', 'btn btn-small btn-danger', student.full_name ~ ', оның аккаунты, келісімшарттары мен төлемдері өшіріледі. Жалғастырасыз ба?') }}
               </td>
             </tr>
           {% endfor %}

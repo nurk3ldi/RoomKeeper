@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import select
 
 from app import db
-from app.models import ROLE_USER, Student, User
+from app.models import ROLE_ADMIN, ROLE_USER, Student, User
 from tests.conftest import PASSWORD, TestConfig, login
 
 
@@ -76,7 +76,7 @@ def test_registered_account_is_a_student_straight_away(app, client):
     login(client, "newuser")
     profile = client.get("/profile").get_data(as_text=True)
     assert "Жаңа Студент" in profile
-    assert "байланыстырылмаған" not in profile
+    assert "Студент деректеріңіз табылмады" not in profile
 
 
 def test_register_claims_the_record_an_admin_already_entered(app, client, make):
@@ -256,6 +256,17 @@ def test_admin_can_change_roles_but_not_their_own(app, admin_client, make):
     with app.app_context():
         assert db.session.get(User, user_id).is_admin
         assert db.session.get(User, admin_id).is_admin
+
+
+def test_account_turned_back_into_a_user_becomes_a_student(app, admin_client, make):
+    user_id = make.user("helper", ROLE_ADMIN)
+
+    admin_client.post(f"/users/{user_id}/role")
+
+    with app.app_context():
+        user = db.session.get(User, user_id)
+        assert not user.is_admin
+        assert (user.student.full_name, user.student.email) == ("helper", "helper@example.com")
 
 
 def test_deleting_user_keeps_linked_student(app, admin_client, make):

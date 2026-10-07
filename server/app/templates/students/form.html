@@ -13,11 +13,10 @@
     {{ form.hidden_tag() }}
     <div class="form-grid">
       {{ ui.field(form.full_name, span=2) }}
-      {{ ui.field(form.email, type="email") }}
+      {{ ui.field(form.email, span=2, type="email") }}
       {{ ui.field(form.phone, type="tel", hint="Мысалы: +77011234567") }}
       {{ ui.field(form.course, hint="1-ден 6-ға дейін") }}
-      {{ ui.field(form.room_id, hint="Жақшада: бос емес / барлық орын") }}
-      {{ ui.field(form.user_id, span=2, hint="Байланысқан пайдаланушы өз келісімшарты мен төлемдерін «Менің бетім» бөлімінен көреді.") }}
+      {{ ui.field(form.room_id, span=2, hint="Жақшада: бос емес / барлық орын") }}
     </div>
     <div class="form-actions">
       <button type="submit" class="btn btn-primary">Сақтау</button>

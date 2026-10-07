@@ -4,7 +4,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
 
 from app import db
-from app.models import ROLE_ADMIN, ROLE_USER, User
+from app.models import ROLE_ADMIN, ROLE_USER, Student, User
 from app.template_helpers import ROLE_LABELS
 from app.users import bp
 from app.utils import admin_required, paginate
@@ -54,6 +54,9 @@ def toggle_role(user_id):
     user = get_other_user(user_id)
     if user is not None:
         user.role = ROLE_USER if user.is_admin else ROLE_ADMIN
+        if not user.is_admin and user.student is None:
+            # Every non-admin account is a student's account.
+            Student.link_account(user, user.username)
         db.session.commit()
         flash(f"{user.username} рөлі: {ROLE_LABELS[user.role]}.", "success")
     return redirect(url_for("users.index"))

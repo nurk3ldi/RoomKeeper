@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import func, select
 
 from app import db
-from app.models import Contract, Payment, Student
+from app.models import Contract, Payment, Student, User
 from tests.conftest import login
 
 
@@ -15,7 +15,6 @@ def form_data(**overrides):
         "phone": "+7 (701) 123-45-67",
         "course": "2",
         "room_id": "0",
-        "user_id": "0",
     }
     data.update(overrides)
     return data
@@ -150,6 +149,36 @@ def test_deleting_student_removes_contracts_and_payments(app, admin_client, make
         assert db.session.scalar(select(func.count(Payment.id))) == 1
 
 
+def test_deleting_student_removes_their_account_too(app, admin_client, make):
+    account = make.user("resident")
+    bystander = make.user("bystander")
+    student_id = make.student(user_id=account)
+    make.student(user_id=bystander)
+
+    admin_client.post(f"/students/{student_id}/delete")
+
+    with app.app_context():
+        assert db.session.get(User, account) is None
+        assert db.session.get(User, bystander) is not None
+    # The deleted student can no longer log in.
+    client = app.test_client()
+    login(client, "resident")
+    assert client.get("/dashboard").status_code == 302
+
+
+def test_deleting_a_student_record_never_deletes_an_admin_account(app, admin_client, make):
+    with app.app_context():
+        admin_id = db.session.scalar(select(User.id).where(User.username == "admin"))
+    student_id = make.student(user_id=admin_id)
+
+    admin_client.post(f"/students/{student_id}/delete")
+
+    with app.app_context():
+        assert db.session.get(Student, student_id) is None
+        assert db.session.get(User, admin_id).is_admin
+    assert admin_client.get("/dashboard").status_code == 200
+
+
 def test_linked_user_sees_own_data_on_profile(app, make):
     owner = make.user("owner")
     make.user("stranger")
@@ -168,8 +197,7 @@ def test_linked_user_sees_own_data_on_profile(app, make):
     stranger = app.test_client()
     login(stranger, "stranger")
     html = stranger.get("/profile").get_data(as_text=True)
-    assert "студент жазбасымен байланыстырылмаған" in html
-    assert "MINE-1" not in html
+    assert "MINE-1" not in html and "Owner Student" not in html
 
 
 def test_admin_profile_describes_admin_rights(admin_client):
@@ -181,11 +209,17 @@ def test_admin_profile_describes_admin_rights(admin_client):
     assert "әкімшіге хабарласыңыз" not in html
 
 
-def test_account_can_be_linked_to_only_one_student(admin_client, make):
+def test_editing_a_student_keeps_the_account_link(app, admin_client, make):
     user_id = make.user("user")
-    make.student(user_id=user_id)
+    student_id = make.student(user_id=user_id)
 
-    # The account is no longer offered, so choosing it is an invalid choice.
-    response = admin_client.post("/students/new", data=form_data(user_id=user_id))
-    assert response.status_code == 200
-    assert f'<option value="{user_id}">' not in response.get_data(as_text=True)
+    form = admin_client.get(f"/students/{student_id}/edit").get_data(as_text=True)
+    response = admin_client.post(f"/students/{student_id}/edit", data=form_data(course="4"))
+
+    assert "Пайдаланушы аккаунты" not in form and 'name="user_id"' not in form
+    assert response.status_code == 302
+    with app.app_context():
+        student = db.session.get(Student, student_id)
+        assert (student.course, student.user_id) == (4, user_id)
+    # The account is still shown on the student's page, read-only.
+    assert "Аккаунт" in admin_client.get(f"/students/{student_id}").get_data(as_text=True)

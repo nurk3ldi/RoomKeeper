@@ -8,7 +8,7 @@
   <div class="actions">
     <a class="btn" href="{{ url_for('students.index') }}">← Тізімге</a>
     <a class="btn" href="{{ url_for('students.edit', student_id=student.id) }}">Өзгерту</a>
-    {{ ui.post_button(url_for('students.delete', student_id=student.id), 'Өшіру', 'btn btn-danger', student.full_name ~ ' және оның келісімшарттары мен төлемдері өшіріледі. Жалғастырасыз ба?') }}
+    {{ ui.post_button(url_for('students.delete', student_id=student.id), 'Өшіру', 'btn btn-danger', student.full_name ~ ', оның аккаунты, келісімшарттары мен төлемдері өшіріледі. Жалғастырасыз ба?') }}
   </div>
 </div>
 
@@ -36,7 +36,7 @@
     </div>
     <div>
       <dt>Аккаунт</dt>
-      <dd>{% if student.user %}{{ student.user.username }}{% else %}<span class="muted">байланыспаған</span>{% endif %}</dd>
+      <dd>{% if student.user %}{{ student.user.username }}{% else %}<span class="muted">әлі тіркелмеген</span>{% endif %}</dd>
     </div>
     <div>
       <dt>Тіркелген күні</dt><dd>{{ student.created_at|date }}</dd>

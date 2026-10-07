@@ -24,7 +24,7 @@ from wtforms.validators import (
 )
 
 from app import db
-from app.models import ROLE_USER, Contract, Room, Student, User
+from app.models import Contract, Room, Student, User
 from app.utils import has_allowed_extension, looks_like_pdf
 
 REQUIRED = "Бұл өрісті толтыру міндетті."
@@ -196,7 +196,6 @@ class StudentForm(BaseForm):
     )
     course = IntegerField("Курс", [Optional(), number_range(1, 6)])
     room_id = SelectField("Бөлме", coerce=int)
-    user_id = SelectField("Пайдаланушы аккаунты", coerce=int)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -204,19 +203,6 @@ class StudentForm(BaseForm):
         self.room_id.choices = [(0, "— Бөлмесіз —")] + [
             (room.id, f"№{room.number} ({room.occupied}/{room.capacity})")
             for room in rooms
-        ]
-
-        linked_elsewhere = select(Student.user_id).where(
-            Student.user_id.is_not(None),
-            Student.id != getattr(self.obj, "id", None),
-        )
-        users = db.session.scalars(
-            select(User)
-            .where(User.role == ROLE_USER, User.id.not_in(linked_elsewhere))
-            .order_by(User.username)
-        )
-        self.user_id.choices = [(0, "— Байланыспаған —")] + [
-            (user.id, f"{user.username} ({user.email})") for user in users
         ]
 
     def validate_room_id(self, field):

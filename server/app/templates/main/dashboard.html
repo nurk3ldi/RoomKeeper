@@ -104,7 +104,7 @@
       {% if current_user.student and current_user.student.room %}
         <p>Сіз №{{ current_user.student.room.number }} бөлмеде тұрасыз.</p>
       {% else %}
-        <p class="muted">Аккаунтыңыз әзірге студент жазбасымен байланыстырылмаған немесе бөлме берілмеген.</p>
+        <p class="muted">Сізге әзірге бөлме берілмеген.</p>
       {% endif %}
       <a class="btn" href="{{ url_for('main.profile') }}">Менің бетім</a>
     </section>
