@@ -2,12 +2,13 @@ import pytest
 from sqlalchemy import select
 
 from app import db
-from app.models import ROLE_USER, User
-from tests.conftest import PASSWORD, TestConfig
+from app.models import ROLE_USER, Student, User
+from tests.conftest import PASSWORD, TestConfig, login
 
 
 def register(client, **overrides):
     data = {
+        "full_name": "Жаңа Студент",
         "username": "newuser",
         "email": "new@example.com",
         "password": PASSWORD,
@@ -26,7 +27,7 @@ def test_anonymous_is_redirected_to_login(client):
 def test_auth_pages_are_minimal(client):
     for path, fields in (
         ("/auth/login", ("login", "password")),
-        ("/auth/register", ("username", "email", "password", "confirm")),
+        ("/auth/register", ("full_name", "username", "email", "password", "confirm")),
     ):
         html = client.get(path).get_data(as_text=True)
 
@@ -63,9 +64,51 @@ def test_register_creates_plain_user(app, client):
         assert user.check_password(PASSWORD)
 
 
+def test_registered_account_is_a_student_straight_away(app, client):
+    register(client)
+
+    with app.app_context():
+        student = db.session.scalar(select(Student))
+        assert (student.full_name, student.email) == ("Жаңа Студент", "new@example.com")
+        assert student.user.username == "newuser"
+        assert (student.phone, student.course, student.room_id) == (None, None, None)
+
+    login(client, "newuser")
+    profile = client.get("/profile").get_data(as_text=True)
+    assert "Жаңа Студент" in profile
+    assert "байланыстырылмаған" not in profile
+
+
+def test_register_claims_the_record_an_admin_already_entered(app, client, make):
+    room_id = make.room(number="204")
+    student_id = make.student(name="Admin Spelling", room_id=room_id)  # student1@example.com
+
+    register(client, email="Student1@Example.com", full_name="Own Spelling")
+
+    with app.app_context():
+        assert db.session.scalar(select(db.func.count(Student.id))) == 1
+        student = db.session.get(Student, student_id)
+        assert student.user.username == "newuser"
+        assert (student.full_name, student.room_id) == ("Admin Spelling", room_id)
+
+
+def test_register_cannot_take_over_a_student_who_has_an_account(app, client, make):
+    owner = make.user("owner")
+    make.student(name="Owned", user_id=owner)  # student1@example.com
+
+    response = register(client, email="student1@example.com")
+
+    assert "Бұл email тіркелген" in response.get_data(as_text=True)
+    with app.app_context():
+        assert db.session.scalar(select(User).where(User.username == "newuser")) is None
+        assert db.session.scalar(select(Student)).user_id == owner
+
+
 @pytest.mark.parametrize(
     "overrides, message",
     [
+        ({"full_name": "Аб"}, "3–120 таңба"),
+        ({"full_name": ""}, "Бұл өрісті толтыру міндетті"),
         ({"username": "ab"}, "3–32 таңба"),
         ({"username": "bad name!"}, "Тек латын әріптері"),
         ({"email": "not-an-email"}, "Email форматы қате"),
@@ -80,6 +123,7 @@ def test_register_validation(app, client, overrides, message):
     assert message in response.get_data(as_text=True)
     with app.app_context():
         assert db.session.scalar(select(User)) is None
+        assert db.session.scalar(select(Student)) is None
 
 
 def test_register_rejects_taken_username_and_email(client, make):

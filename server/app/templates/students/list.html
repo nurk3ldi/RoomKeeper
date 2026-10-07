@@ -48,7 +48,7 @@
           {% for student in page.items %}
             <tr>
               <td><a href="{{ url_for('students.detail', student_id=student.id) }}">{{ student.full_name }}</a></td>
-              <td>{{ student.course }}</td>
+              <td>{{ student.course or '—' }}</td>
               <td>
                 {% if student.room %}
                   <a href="{{ url_for('rooms.detail', room_id=student.room.id) }}">№{{ student.room.number }}</a>
@@ -56,7 +56,7 @@
                   <span class="muted">—</span>
                 {% endif %}
               </td>
-              <td>{{ student.phone }}</td>
+              <td>{{ student.phone or '—' }}</td>
               <td>{{ student.email }}</td>
               <td>{{ student.created_at|date }}</td>
               <td class="actions">

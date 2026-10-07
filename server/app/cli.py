@@ -8,10 +8,7 @@ from app import db
 from app.models import ROLE_ADMIN, Contract, Room, Student, User
 
 DEMO_ADMIN = ("admin", "admin@roomkeeper.kz", "Admin123!")
-DEMO_USERS = [
-    ("miras", "miras@roomkeeper.kz", "User123!"),
-    ("daulet", "daulet@roomkeeper.kz", "User123!"),
-]
+DEMO_USER = ("miras", "miras@roomkeeper.kz", "User123!")
 # Monthly price by room capacity.
 DEMO_PRICES = {2: Decimal("35000"), 3: Decimal("28000"), 4: Decimal("22000")}
 DEMO_UNASSIGNED = 4
@@ -48,12 +45,9 @@ DEMO_STUDENTS = [
 def create_demo_data():
     admin = User(username=DEMO_ADMIN[0], email=DEMO_ADMIN[1], role=ROLE_ADMIN)
     admin.set_password(DEMO_ADMIN[2])
-    users = [admin]
-    for username, email, password in DEMO_USERS:
-        user = User(username=username, email=email)
-        user.set_password(password)
-        users.append(user)
-    db.session.add_all(users)
+    demo_user = User(username=DEMO_USER[0], email=DEMO_USER[1])
+    demo_user.set_password(DEMO_USER[2])
+    db.session.add_all([admin, demo_user])
 
     rooms = []
     for floor in (1, 2, 3):
@@ -91,7 +85,7 @@ def create_demo_data():
             phone=f"+7701{1000000 + index * 7919:07d}",
             course=1 + index % 4,
             room=room,
-            user=users[1] if index == 0 else None,
+            user=demo_user if index == 0 else None,
         )
         db.session.add(student)
         if room is None:

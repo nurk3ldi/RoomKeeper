@@ -8,7 +8,8 @@
 {% endblock %}
 
 {% block fields %}
-  {{ ui.field(form.username, compact=true, autofocus=true, autocomplete="username") }}
+  {{ ui.field(form.full_name, compact=true, autofocus=true, autocomplete="name") }}
+  {{ ui.field(form.username, compact=true, autocomplete="username") }}
   {{ ui.field(form.email, compact=true, type="email", autocomplete="email") }}
   {{ ui.field(form.password, compact=true, autocomplete="new-password") }}
   {{ ui.field(form.confirm, compact=true, autocomplete="new-password") }}

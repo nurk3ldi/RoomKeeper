@@ -4,7 +4,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from app import db
 from app.auth import bp
 from app.forms import LoginForm, RegisterForm
-from app.models import User
+from app.models import Student, User
 from app.utils import safe_next_url
 
 
@@ -34,6 +34,7 @@ def register():
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)
+        Student.link_account(user, form.full_name.data)
         db.session.commit()
         flash("Тіркелу сәтті өтті. Енді жүйеге кіріңіз.", "success")
         return redirect(url_for("auth.login"))

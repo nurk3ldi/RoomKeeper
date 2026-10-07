@@ -66,6 +66,20 @@ def test_student_validation(app, admin_client, overrides, message):
         assert db.session.scalar(select(Student)) is None
 
 
+def test_phone_and_course_are_optional(app, admin_client):
+    response = admin_client.post("/students/new", data=form_data(phone="", course=""))
+    assert response.status_code == 302
+
+    with app.app_context():
+        student = db.session.scalar(select(Student))
+        assert (student.phone, student.course) == (None, None)
+        student_id = student.id
+
+    # Pages that list the student cope with the missing values.
+    for path in ("/students/", f"/students/{student_id}", f"/students/{student_id}/edit"):
+        assert admin_client.get(path).status_code == 200
+
+
 def test_student_cannot_be_put_into_full_room(app, admin_client, make):
     room_id = make.room(capacity=1)
     resident = make.student(room_id=room_id)

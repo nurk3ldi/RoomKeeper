@@ -55,7 +55,7 @@ def test_seed_command(app):
 
     with app.app_context():
         count = lambda model: db.session.scalar(select(func.count(model.id)))  # noqa: E731
-        assert count(User) == 3
+        assert count(User) == 2
         assert count(Room) == 12
         assert count(Student) == 26
         assert count(Contract) == 22

@@ -52,8 +52,8 @@
           {% for student in room.students %}
             <tr>
               <td><a href="{{ url_for('students.detail', student_id=student.id) }}">{{ student.full_name }}</a></td>
-              <td>{{ student.course }}</td>
-              <td>{{ student.phone }}</td>
+              <td>{{ student.course or '—' }}</td>
+              <td>{{ student.phone or '—' }}</td>
               <td>{{ student.email }}</td>
             </tr>
           {% endfor %}

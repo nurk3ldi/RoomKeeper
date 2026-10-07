@@ -15,8 +15,8 @@
 <section class="card">
   <dl class="details">
     <dt>Email</dt><dd>{{ student.email }}</dd>
-    <dt>Телефон</dt><dd>{{ student.phone }}</dd>
-    <dt>Курс</dt><dd>{{ student.course }}</dd>
+    <dt>Телефон</dt><dd>{{ student.phone or '—' }}</dd>
+    <dt>Курс</dt><dd>{{ student.course or '—' }}</dd>
     <dt>Бөлме</dt>
     <dd>
       {% if student.room %}

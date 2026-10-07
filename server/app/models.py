@@ -77,8 +77,10 @@ class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(120), nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    phone = db.Column(db.String(20), nullable=False)
-    course = db.Column(db.Integer, nullable=False)
+    # Unknown for students who signed up themselves, until an admin
+    # fills them in.
+    phone = db.Column(db.String(20))
+    course = db.Column(db.Integer)
     room_id = db.Column(
         db.Integer, db.ForeignKey("rooms.id", ondelete="SET NULL"), index=True
     )
@@ -95,6 +97,27 @@ class Student(db.Model):
         cascade="all, delete-orphan",
         order_by="Contract.start_date.desc()",
     )
+
+    @classmethod
+    def find_by_email(cls, email):
+        return db.session.scalar(
+            select(cls).where(func.lower(cls.email) == email.lower())
+        )
+
+    @classmethod
+    def link_account(cls, user, full_name):
+        """Give a newly registered account its student record.
+
+        A record an admin already entered under the same email is reused
+        (and keeps the admin's spelling of the name); otherwise a new one
+        is created.
+        """
+        student = cls.find_by_email(user.email)
+        if student is None:
+            student = cls(full_name=full_name, email=user.email)
+            db.session.add(student)
+        student.user = user
+        return student
 
     def to_dict(self):
         return {

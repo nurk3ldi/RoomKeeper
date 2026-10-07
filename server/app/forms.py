@@ -108,6 +108,7 @@ class LoginForm(BaseForm):
 
 
 class RegisterForm(BaseForm):
+    full_name = StringField("Аты-жөні", [required(), length(3, 120)], filters=[strip])
     username = StringField(
         "Логин",
         [
@@ -136,6 +137,13 @@ class RegisterForm(BaseForm):
         "Құпиясөзді қайталаңыз",
         [required(), EqualTo("password", "Құпиясөздер сәйкес келмейді.")],
     )
+
+    def validate_email(self, field):
+        # A student record without an account is claimed on sign-up; one
+        # that already belongs to somebody is not up for grabs.
+        student = Student.find_by_email(field.data or "")
+        if student is not None and student.user_id is not None:
+            raise ValidationError("Бұл email тіркелген.")
 
 
 class RoomForm(BaseForm):
@@ -178,7 +186,7 @@ class StudentForm(BaseForm):
     phone = StringField(
         "Телефон",
         [
-            required(),
+            Optional(),
             Regexp(
                 r"^\+?[0-9]{10,15}$",
                 message="Телефон 10–15 цифрдан тұруы керек, мысалы +77011234567.",
@@ -186,7 +194,7 @@ class StudentForm(BaseForm):
         ],
         filters=[strip, compact_phone],
     )
-    course = IntegerField("Курс", [required(), number_range(1, 6)])
+    course = IntegerField("Курс", [Optional(), number_range(1, 6)])
     room_id = SelectField("Бөлме", coerce=int)
     user_id = SelectField("Пайдаланушы аккаунты", coerce=int)
 

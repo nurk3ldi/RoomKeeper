@@ -18,7 +18,7 @@ SORT_COLUMNS = {
 def save_student(student, form):
     student.full_name = form.full_name.data
     student.email = form.email.data
-    student.phone = form.phone.data
+    student.phone = form.phone.data or None
     student.course = form.course.data
     # 0 is the "none" option of both selects.
     student.room_id = form.room_id.data or None
