@@ -485,13 +485,97 @@ td.actions > * { margin-left: 4px; }
   .float-residents { display: none; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .lp-hero * { animation: none !important; }
-}
-
 /* Error pages */
 .error-page { text-align: center; padding: 64px 16px; }
 .error-page .code { font-size: 5rem; font-weight: 800; color: var(--primary); line-height: 1; }
 .error-page .code::after { content: ""; display: block; width: 64px; height: 4px; margin: 14px auto 0; border-radius: 2px; background: var(--accent); }
 .error-page h1 { margin: 16px 0 8px; }
 .error-page p { color: var(--muted); margin: 0 0 20px; }
+
+/* Motion -------------------------------------------------------------
+   Everything here is light and plays once: pages cross-fade into each
+   other, content rises into place, and controls answer the pointer.
+   Entrance animations use `backwards` fill, so once they finish the
+   element is free to react to hover again. */
+
+/* Page-to-page cross-fade where the browser supports it; the header is
+   named so it stays put instead of fading with the page. Elsewhere the
+   entrance animations below carry the change of page on their own. */
+@view-transition { navigation: auto; }
+.topbar { view-transition-name: topbar; }
+::view-transition-old(root) { animation: page-out .16s ease both; }
+::view-transition-new(root) { animation: page-in .26s ease both; }
+@keyframes page-out { to { opacity: 0; } }
+@keyframes page-in { from { opacity: 0; } }
+
+@keyframes rise-soft { from { opacity: 0; translate: 0 14px; } }
+@keyframes fade-row { from { opacity: 0; translate: 0 6px; } }
+@keyframes drop { from { opacity: 0; translate: 0 -10px; } }
+@keyframes pop-soft { from { opacity: 0; scale: .96; } }
+
+/* Page content: heading first, then each block a beat later. */
+.container > * { animation: rise-soft .45s cubic-bezier(.2, .7, .2, 1) backwards; }
+.container > :nth-child(2) { animation-delay: .06s; }
+.container > :nth-child(3) { animation-delay: .12s; }
+.container > :nth-child(4) { animation-delay: .18s; }
+.container > :nth-child(n+5) { animation-delay: .24s; }
+
+.stat { animation: pop-soft .4s cubic-bezier(.2, .7, .2, 1) backwards; }
+.stat:nth-child(2) { animation-delay: .05s; }
+.stat:nth-child(3) { animation-delay: .1s; }
+.stat:nth-child(4) { animation-delay: .15s; }
+
+/* Table rows follow their card in, the first dozen one after another. */
+tbody tr { animation: fade-row .35s ease .42s backwards; }
+tbody tr:nth-child(1) { animation-delay: .12s; }
+tbody tr:nth-child(2) { animation-delay: .15s; }
+tbody tr:nth-child(3) { animation-delay: .18s; }
+tbody tr:nth-child(4) { animation-delay: .21s; }
+tbody tr:nth-child(5) { animation-delay: .24s; }
+tbody tr:nth-child(6) { animation-delay: .27s; }
+tbody tr:nth-child(7) { animation-delay: .3s; }
+tbody tr:nth-child(8) { animation-delay: .33s; }
+tbody tr:nth-child(9) { animation-delay: .36s; }
+tbody tr:nth-child(10) { animation-delay: .39s; }
+
+.meter span { transform-origin: left; animation: grow .7s cubic-bezier(.2, .7, .2, 1) .3s backwards; }
+.flash { animation: drop .4s cubic-bezier(.2, .7, .2, 1) backwards; }
+.error-page > * { animation: rise-soft .5s cubic-bezier(.2, .7, .2, 1) backwards; }
+.error-page > :nth-child(2) { animation-delay: .08s; }
+.error-page > :nth-child(3) { animation-delay: .14s; }
+.error-page > :nth-child(4) { animation-delay: .2s; }
+
+/* Controls */
+a,
+.nav a,
+.pagination a,
+.password-toggle { transition: color .15s ease, background-color .15s ease, box-shadow .15s ease; }
+.btn {
+  transition: color .15s ease, background-color .15s ease, border-color .15s ease,
+              box-shadow .15s ease, translate .15s ease, scale .1s ease;
+}
+.btn:hover { translate: 0 -1px; box-shadow: 0 4px 12px rgba(27, 27, 58, .1); }
+.btn-primary:hover { box-shadow: 0 6px 16px rgba(108, 92, 231, .3); }
+.btn:active { translate: 0 0; scale: .97; box-shadow: none; }
+.field input,
+.field select,
+.filters input,
+.filters select { transition: border-color .15s ease, outline-color .15s ease, background-color .15s ease; }
+tbody tr { transition: background-color .15s ease; }
+.stat { transition: translate .2s ease, box-shadow .2s ease; }
+.stat:hover { translate: 0 -2px; box-shadow: 0 10px 24px rgba(27, 27, 58, .08); }
+.account > .profile-link { transition: background-color .15s ease, box-shadow .15s ease, scale .15s ease; }
+.account > .profile-link:hover { scale: 1.06; }
+.badge { transition: background-color .15s ease, color .15s ease; }
+
+/* People who ask their system for less motion get none of the above. */
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0s !important;
+    transition-duration: .01ms !important;
+  }
+}
