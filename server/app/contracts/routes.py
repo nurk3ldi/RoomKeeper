@@ -1,3 +1,5 @@
+from io import BytesIO
+
 from flask import (
     abort,
     current_app,
@@ -5,14 +7,17 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     send_from_directory,
     url_for,
 )
 from flask_login import current_user, login_required
 from sqlalchemy import or_, select
 from sqlalchemy.orm import contains_eager
+from werkzeug.utils import secure_filename
 
 from app import db
+from app.contract_pdf import render_contract_pdf
 from app.contracts import bp
 from app.forms import ContractForm
 from app.models import Contract, Student
@@ -144,13 +149,23 @@ def download(contract_id):
     is_owner = contract.student.user_id == current_user.id
     if not (current_user.is_admin or is_owner):
         abort(403)
-    if not contract.pdf_filename:
-        abort(404)
-    return send_from_directory(
-        current_app.config["UPLOAD_FOLDER"],
-        contract.pdf_filename,
+
+    # ?download=1 saves the file instead of opening it in the browser.
+    as_attachment = request.args.get("download") == "1"
+    if contract.pdf_filename:
+        return send_from_directory(
+            current_app.config["UPLOAD_FOLDER"],
+            contract.pdf_filename,
+            mimetype="application/pdf",
+            as_attachment=as_attachment,
+            download_name=contract.pdf_original_name,
+        )
+    # No uploaded file: the system writes the agreement itself.
+    return send_file(
+        BytesIO(render_contract_pdf(contract)),
         mimetype="application/pdf",
-        download_name=contract.pdf_original_name,
+        as_attachment=as_attachment,
+        download_name=secure_filename(f"kelisimshart-{contract.number}.pdf"),
     )
 
 

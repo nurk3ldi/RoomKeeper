@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="page-head">
-  <h1>Менің бетім</h1>
+  <h1>Профиль</h1>
   {{ ui.post_button(url_for('auth.logout'), 'Жүйеден шығу', 'btn btn-danger') }}
 </div>
 
@@ -53,7 +53,7 @@
       </dl>
     {% elif current_user.is_admin %}
       <p class="muted">Сіз жатақхана жүйесінің әкімшісісіз: бөлмелерді, студенттерді, келісімшарттар мен төлемдерді басқарасыз, пайдаланушылардың рөлін өзгерте аласыз.</p>
-      <a class="btn" href="{{ url_for('main.dashboard') }}">Басқару тақтасына өту</a>
+      <a class="btn" href="{{ url_for('main.dashboard') }}">Басты бетке өту</a>
     {% else %}
       <p class="muted">Студент деректеріңіз табылмады. Әкімшіге хабарласыңыз.</p>
     {% endif %}
@@ -65,9 +65,10 @@
     <section class="card">
       <div class="page-head">
         <h2>Келісімшарт №{{ contract.number }} {{ ui.contract_badge(contract) }}</h2>
-        {% if contract.pdf_filename %}
+        <div class="actions">
           <a class="btn btn-small" href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">PDF ашу</a>
-        {% endif %}
+          <a class="btn btn-small" href="{{ url_for('contracts.download', contract_id=contract.id, download=1) }}">Жүктеп алу</a>
+        </div>
       </div>
       <p class="muted">
         {{ contract.start_date|date }} – {{ contract.end_date|date }} ·

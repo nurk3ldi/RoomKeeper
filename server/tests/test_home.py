@@ -11,7 +11,7 @@ def test_home_is_public_and_offers_the_way_in(client, make):
     assert response.status_code == 200
     assert 'href="/auth/login">Кіру</a>' in html
     assert 'href="/auth/register">Тіркелу</a>' in html
-    assert "Басқару тақтасына өту" not in html
+    assert "Басты бетке өту" not in html
     assert "<strong>25%</strong>" in html
     assert "3 бос орын" in html
     assert "1 студент тұрады" in html
@@ -60,8 +60,8 @@ def test_home_for_logged_in_user_links_to_dashboard_and_profile(client, make):
 
     html = client.get("/").get_data(as_text=True)
 
-    assert 'href="/dashboard">Басқару тақтасына өту</a>' in html
-    assert 'href="/profile" aria-label="Менің бетім"' in html
+    assert 'href="/dashboard">Басты бетке өту</a>' in html
+    assert 'href="/profile" aria-label="Профиль"' in html
     assert 'href="/auth/login"' not in html
 
 

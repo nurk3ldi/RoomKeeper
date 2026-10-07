@@ -36,17 +36,21 @@
   </section>
 
   <section class="card">
-    <h2>Келісімшарт файлы</h2>
+    <h2>Келісімшарт құжаты</h2>
     {% if contract.pdf_filename %}
-      <p>{{ contract.pdf_original_name }}</p>
-      <div class="form-actions">
-        <a class="btn btn-primary" href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">PDF ашу</a>
-        {{ ui.post_button(url_for('contracts.delete_pdf', contract_id=contract.id), 'Файлды өшіру', 'btn btn-danger', 'Келісімшарт файлын өшіресіз бе?') }}
-      </div>
+      <p>Жүктелген файл: {{ contract.pdf_original_name }}</p>
     {% else %}
-      <p class="muted">PDF файл жүктелмеген.</p>
-      <a class="btn" href="{{ url_for('contracts.edit', contract_id=contract.id) }}">Файл жүктеу</a>
+      <p class="muted">Құжатты жүйе осы келісімшарттың деректерінен автоматты жасайды. Өз файлыңызды жүктесеңіз, оның орнына сол көрсетіледі.</p>
     {% endif %}
+    <div class="form-actions">
+      <a class="btn btn-primary" href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">PDF ашу</a>
+      <a class="btn" href="{{ url_for('contracts.download', contract_id=contract.id, download=1) }}">Жүктеп алу</a>
+      {% if contract.pdf_filename %}
+        {{ ui.post_button(url_for('contracts.delete_pdf', contract_id=contract.id), 'Файлды өшіру', 'btn btn-danger', 'Жүктелген файл өшіріліп, орнына жүйе жасаған құжат көрсетіледі. Жалғастырасыз ба?') }}
+      {% else %}
+        <a class="btn" href="{{ url_for('contracts.edit', contract_id=contract.id) }}">Өз файлын жүктеу</a>
+      {% endif %}
+    </div>
   </section>
 </div>
 

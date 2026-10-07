@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="page-head">
-  <h1>Басқару тақтасы</h1>
+  <h1>Басты бет</h1>
   <span class="muted">{{ today|date }}</span>
 </div>
 
@@ -105,7 +105,7 @@
       {% else %}
         <p class="muted">Сізге әзірге бөлме берілмеген.</p>
       {% endif %}
-      <a class="btn" href="{{ url_for('main.profile') }}">Менің бетім</a>
+      <a class="btn" href="{{ url_for('main.profile') }}">Профиль</a>
     </section>
   {% endif %}
 </div>

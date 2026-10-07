@@ -19,7 +19,7 @@
       {% if contract and contract.pdf_filename %}
         {{ ui.field(form.pdf, span=2, hint="Қазіргі файл: " ~ contract.pdf_original_name ~ ". Жаңа файл таңдасаңыз, ескісі ауыстырылады.", accept=".pdf,application/pdf") }}
       {% else %}
-        {{ ui.field(form.pdf, span=2, hint="Тек PDF, " ~ (config.MAX_CONTENT_LENGTH / 1024 / 1024)|round|int ~ " МБ-қа дейін.", accept=".pdf,application/pdf") }}
+        {{ ui.field(form.pdf, span=2, hint="Міндетті емес: жүктемесеңіз, құжатты жүйе өзі жасайды. Тек PDF, " ~ (config.MAX_CONTENT_LENGTH / 1024 / 1024)|round|int ~ " МБ-қа дейін.", accept=".pdf,application/pdf") }}
       {% endif %}
       {% if not contract %}
         {{ ui.checkbox(form.generate_schedule) }}

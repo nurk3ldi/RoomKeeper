@@ -4,5 +4,6 @@ Flask-Login
 Flask-Migrate
 Flask-WTF
 email-validator
+fpdf2
 psycopg[binary]
 python-dotenv

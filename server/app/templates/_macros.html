@@ -48,7 +48,7 @@
    log-out button lives). #}
 {% macro profile_link() %}
   <a class="profile-link{% if request.endpoint == 'main.profile' %} active{% endif %}"
-     href="{{ url_for('main.profile') }}" aria-label="Менің бетім"
+     href="{{ url_for('main.profile') }}" aria-label="Профиль"
      title="{{ current_user.username }} · {{ role_labels[current_user.role] }}">
     {{ icon('user', 'line-icon') }}
   </a>

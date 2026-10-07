@@ -19,7 +19,7 @@
       {% block topbar_nav %}
         {% if current_user.is_authenticated %}
           <nav class="nav">
-            <a href="{{ url_for('main.dashboard') }}"{% if request.endpoint == 'main.dashboard' %} class="active"{% endif %}>Басқару тақтасы</a>
+            <a href="{{ url_for('main.dashboard') }}"{% if request.endpoint == 'main.dashboard' %} class="active"{% endif %}>Басты бет</a>
             {{ nav_link('rooms.index', 'Бөлмелер') }}
             {% if current_user.is_admin %}
               {{ nav_link('students.index', 'Студенттер') }}

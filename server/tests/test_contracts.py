@@ -126,7 +126,75 @@ def test_replacing_and_removing_pdf_cleans_up_files(app, admin_client, make):
     admin_client.post(f"/contracts/{first.id}/pdf/delete")
     assert only_contract(app).pdf_filename is None
     assert uploads(app) == []
-    assert admin_client.get(f"/contracts/{first.id}/pdf").status_code == 404
+    # With the upload gone, the system's own document is served again.
+    fallback = admin_client.get(f"/contracts/{first.id}/pdf")
+    assert fallback.status_code == 200
+    assert fallback.data.startswith(b"%PDF-") and b"v2" not in fallback.data[-10:]
+
+
+def test_every_contract_has_a_generated_document(app, admin_client, make):
+    contract_id = make.contract(make.student(name="Мирас Сейітұлы"), number="RK/2026-7")
+    make.payment(contract_id)
+
+    opened = admin_client.get(f"/contracts/{contract_id}/pdf")
+    saved = admin_client.get(f"/contracts/{contract_id}/pdf?download=1")
+
+    assert opened.status_code == 200 and opened.mimetype == "application/pdf"
+    assert opened.data.startswith(b"%PDF-") and len(opened.data) > 5000
+    assert opened.headers["Content-Disposition"].startswith("inline")
+    # Nothing is written to disk for it, and the file name is safe to save.
+    assert uploads(app) == []
+    assert saved.headers["Content-Disposition"] == "attachment; filename=kelisimshart-RK_2026-7.pdf"
+
+    page = admin_client.get(f"/contracts/{contract_id}").get_data(as_text=True)
+    assert "автоматты жасайды" in page and "Жүктеп алу" in page and "Өз файлын жүктеу" in page
+
+
+def test_uploaded_file_replaces_the_generated_document(app, admin_client, make):
+    student_id = make.student()
+    post_contract(admin_client, "/contracts/new", student_id=student_id, pdf=(PDF_BYTES, "signed.pdf"))
+    contract = only_contract(app)
+
+    assert admin_client.get(f"/contracts/{contract.id}/pdf").data == PDF_BYTES
+    saved = admin_client.get(f"/contracts/{contract.id}/pdf?download=1")
+    assert saved.headers["Content-Disposition"] == "attachment; filename=signed.pdf"
+    page = admin_client.get(f"/contracts/{contract.id}").get_data(as_text=True)
+    assert "Жүктелген файл: signed.pdf" in page and "Файлды өшіру" in page
+
+
+def test_generated_document_states_the_contract_terms(app, make):
+    from datetime import date
+
+    from app.contract_pdf import contract_preamble, contract_sections, contract_title, long_date, signing_date
+
+    room_id = make.room(number="204", floor=2)
+    housed = make.contract(
+        make.student(name="Мирас Сейітұлы", room_id=room_id),
+        number="RK-1",
+        start=date(2026, 9, 5),
+        end=date(2027, 6, 30),
+        fee="22000",
+    )
+    unhoused = make.contract(make.student(name="No Room"), number="RK-2")
+    make.payment(housed)
+
+    with app.app_context():
+        contract = db.session.get(Contract, housed)
+        text = " ".join(clause for _, clauses in contract_sections(contract) for clause in clauses)
+
+        assert contract_title(contract).endswith("№ RK-1")
+        assert "Мирас Сейітұлы" in contract_preamble(contract)
+        assert "2-қабаттағы №204 бөлмеден" in text
+        assert "05.09.2026 – 30.06.2027" in text
+        assert "айына 22 000 теңге" in text
+        assert "әр айдың 5-күнінен" in text
+        assert "қосымшасында" in text
+        assert long_date(signing_date(contract)) == "2026 жылғы 5 қыркүйек"
+
+        other = db.session.get(Contract, unhoused)
+        other_text = " ".join(clause for _, clauses in contract_sections(other) for clause in clauses)
+        assert "бөлме нөмірі орналастыру кезінде белгіленеді" in other_text
+        assert "қосымшасында" not in other_text
 
 
 def test_deleting_contract_or_student_deletes_pdf(app, admin_client, make):
@@ -160,6 +228,12 @@ def test_pdf_is_only_served_to_admin_and_owner(app, admin_client, make):
     stranger_client = app.test_client()
     login(stranger_client, "stranger")
     assert stranger_client.get(url).status_code == 403
+
+    # The same rule guards the document the system writes itself.
+    admin_client.post(f"/contracts/{contract.id}/pdf/delete")
+    assert owner_client.get(url).data.startswith(b"%PDF-")
+    assert stranger_client.get(url).status_code == 403
+    assert app.test_client().get(url).status_code == 302
 
 
 def test_schedule_is_generated_on_request(app, admin_client, make):

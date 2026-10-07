@@ -6,7 +6,7 @@
 {% block topbar_nav %}
   {% if current_user.is_authenticated %}
     <div class="account">
-      <a class="btn btn-pill" href="{{ url_for('main.dashboard') }}">Басқару тақтасына өту</a>
+      <a class="btn btn-pill" href="{{ url_for('main.dashboard') }}">Басты бетке өту</a>
       {{ ui.profile_link() }}
     </div>
   {% else %}

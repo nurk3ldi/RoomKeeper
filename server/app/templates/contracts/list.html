@@ -47,11 +47,7 @@
               <td class="num">{{ contract.monthly_fee|money }}</td>
               <td>{{ ui.contract_badge(contract) }}</td>
               <td>
-                {% if contract.pdf_filename %}
-                  <a href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">Ашу</a>
-                {% else %}
-                  <span class="muted">—</span>
-                {% endif %}
+                <a href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">Ашу</a>
               </td>
               <td class="actions">
                 <a class="btn btn-small" href="{{ url_for('contracts.edit', contract_id=contract.id) }}">Өзгерту</a>

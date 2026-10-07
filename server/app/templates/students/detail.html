@@ -66,11 +66,7 @@
               <td class="num">{{ contract.total_paid|money }} / {{ contract.total_due|money }}</td>
               <td class="num">{{ contract.debt|money }}</td>
               <td>
-                {% if contract.pdf_filename %}
-                  <a href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">Ашу</a>
-                {% else %}
-                  <span class="muted">—</span>
-                {% endif %}
+                <a href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">Ашу</a>
               </td>
             </tr>
           {% endfor %}
