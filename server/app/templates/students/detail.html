@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}{{ student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>{{ student.full_name }}</h1>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('students.index') }}">← Тізімге</a>
+    <a class="btn" href="{{ url_for('students.edit', student_id=student.id) }}">Өзгерту</a>
+    {{ ui.post_button(url_for('students.delete', student_id=student.id), 'Өшіру', 'btn btn-danger', student.full_name ~ ' және оның келісімшарттары мен төлемдері өшіріледі. Жалғастырасыз ба?') }}
+  </div>
+</div>
+
+<section class="card">
+  <dl class="details">
+    <dt>Email</dt><dd>{{ student.email }}</dd>
+    <dt>Телефон</dt><dd>{{ student.phone }}</dd>
+    <dt>Курс</dt><dd>{{ student.course }}</dd>
+    <dt>Бөлме</dt>
+    <dd>
+      {% if student.room %}
+        <a href="{{ url_for('rooms.detail', room_id=student.room.id) }}">№{{ student.room.number }}</a>,
+        {{ student.room.floor }}-қабат
+      {% else %}
+        <span class="muted">берілмеген</span>
+      {% endif %}
+    </dd>
+    <dt>Аккаунт</dt>
+    <dd>{% if student.user %}{{ student.user.username }}{% else %}<span class="muted">байланыспаған</span>{% endif %}</dd>
+    <dt>Тіркелген күні</dt><dd>{{ student.created_at|date }}</dd>
+  </dl>
+</section>
+
+<section class="card">
+  <div class="page-head">
+    <h2>Келісімшарттар</h2>
+    <a class="btn btn-small" href="{{ url_for('contracts.create', student_id=student.id) }}">+ Келісімшарт қосу</a>
+  </div>
+  {% if student.contracts %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Нөмірі</th><th>Мерзімі</th><th>Күйі</th>
+            <th class="num">Төленді</th><th class="num">Қарыз</th><th>PDF</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for contract in student.contracts %}
+            <tr>
+              <td><a href="{{ url_for('contracts.detail', contract_id=contract.id) }}">№{{ contract.number }}</a></td>
+              <td>{{ contract.start_date|date }} – {{ contract.end_date|date }}</td>
+              <td>{{ ui.contract_badge(contract) }}</td>
+              <td class="num">{{ contract.total_paid|money }} / {{ contract.total_due|money }}</td>
+              <td class="num">{{ contract.debt|money }}</td>
+              <td>
+                {% if contract.pdf_filename %}
+                  <a href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">Ашу</a>
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="empty">Келісімшарттар жоқ.</p>
+  {% endif %}
+</section>
+{% endblock %}

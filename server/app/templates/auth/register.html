@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Тіркелу{% endblock %}
+
+{% block content %}
+<div class="card card-narrow">
+  <h1>Тіркелу</h1>
+  <p class="muted">Жаңа аккаунт «Пайдаланушы» рөлімен ашылады.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {{ ui.field(form.username, hint="3–32 таңба: латын әріптері, цифрлар, нүкте, астын сызу.", autofocus=true, autocomplete="username") }}
+    {{ ui.field(form.email, type="email", autocomplete="email") }}
+    {{ ui.field(form.password, hint="Кемінде 8 таңба.", autocomplete="new-password") }}
+    {{ ui.field(form.confirm, autocomplete="new-password") }}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Тіркелу</button>
+    </div>
+  </form>
+  <p class="muted">Аккаунтыңыз бар ма? <a href="{{ url_for('auth.login') }}">Кіру</a></p>
+</div>
+{% endblock %}

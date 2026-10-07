@@ -1,0 +1,19 @@
+{# Standalone on purpose: an error page must render even when the
+   database (and so current_user in base.html) is unavailable. #}
+<!doctype html>
+<html lang="kk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ code }} — RoomKeeper</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main class="container error-page">
+    <div class="code">{{ code }}</div>
+    <h1>{% block heading %}{{ title }}{% endblock %}</h1>
+    <p>{% block text %}{{ text or '' }}{% endblock %}</p>
+    <a class="btn btn-primary" href="{{ url_for('main.dashboard') }}">Басты бетке оралу</a>
+  </main>
+</body>
+</html>

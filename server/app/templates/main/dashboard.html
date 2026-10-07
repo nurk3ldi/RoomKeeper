@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Басты бет{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Басты бет</h1>
+  <span class="muted">{{ today|date }}</span>
+</div>
+
+<div class="grid">
+  <div class="stat">
+    <div class="label">Бөлмелер</div>
+    <div class="value">{{ stats.rooms }}</div>
+    <div class="sub">Барлығы {{ stats.capacity }} орын</div>
+  </div>
+  <div class="stat">
+    <div class="label">Толтырылуы</div>
+    <div class="value">{{ stats.occupancy_percent }}%</div>
+    <div class="sub">{{ stats.occupied }} / {{ stats.capacity }} орын бос емес</div>
+  </div>
+  <div class="stat stat-success">
+    <div class="label">Бос орындар</div>
+    <div class="value">{{ stats.free_places }}</div>
+    <div class="sub"><a href="{{ url_for('rooms.index', availability='free') }}">Бос орны бар бөлмелер</a></div>
+  </div>
+  <div class="stat">
+    <div class="label">Студенттер</div>
+    <div class="value">{{ stats.students }}</div>
+    <div class="sub">
+      {% if current_user.is_admin and stats.unassigned_students %}
+        <a href="{{ url_for('students.index', room='none') }}">{{ stats.unassigned_students }} студент бөлмесіз</a>
+      {% else %}
+        {{ stats.unassigned_students }} студент бөлмесіз
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if current_user.is_admin %}
+  <h2>Төлемдер күйі</h2>
+  <div class="grid">
+    {% for status, css in [('paid', 'stat-success'), ('pending', ''), ('overdue', 'stat-danger')] %}
+      <div class="stat {{ css }}">
+        <div class="label">{{ payment_status_labels[status] }}</div>
+        <div class="value">{{ stats.payments[status].amount|money }}</div>
+        <div class="sub">
+          <a href="{{ url_for('payments.index', status=status) }}">{{ stats.payments[status].count }} төлем</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="columns">
+  <section class="card">
+    <h2>Бос орны бар бөлмелер</h2>
+    {% if free_rooms %}
+      <table>
+        <thead>
+          <tr><th>Бөлме</th><th>Қабат</th><th>Толтырылуы</th><th class="num">Айлық баға</th></tr>
+        </thead>
+        <tbody>
+          {% for room in free_rooms %}
+            <tr>
+              <td><a href="{{ url_for('rooms.detail', room_id=room.id) }}">№{{ room.number }}</a></td>
+              <td>{{ room.floor }}</td>
+              <td>{{ ui.occupancy(room) }}</td>
+              <td class="num">{{ room.monthly_price|money }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="empty">Бос орын жоқ.</p>
+    {% endif %}
+  </section>
+
+  {% if current_user.is_admin %}
+    <section class="card">
+      <h2>Мерзімі өткен төлемдер</h2>
+      {% if overdue %}
+        <table>
+          <thead>
+            <tr><th>Студент</th><th>Мерзімі</th><th class="num">Сома</th></tr>
+          </thead>
+          <tbody>
+            {% for payment in overdue %}
+              <tr>
+                <td><a href="{{ url_for('contracts.detail', contract_id=payment.contract_id) }}">{{ payment.contract.student.full_name }}</a></td>
+                <td>{{ payment.due_date|date }}</td>
+                <td class="num">{{ payment.amount|money }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="empty">Мерзімі өткен төлем жоқ.</p>
+      {% endif %}
+    </section>
+  {% else %}
+    <section class="card">
+      <h2>Менің жатақханам</h2>
+      {% if current_user.student and current_user.student.room %}
+        <p>Сіз №{{ current_user.student.room.number }} бөлмеде тұрасыз.</p>
+      {% else %}
+        <p class="muted">Аккаунтыңыз әзірге студент жазбасымен байланыстырылмаған немесе бөлме берілмеген.</p>
+      {% endif %}
+      <a class="btn" href="{{ url_for('main.profile') }}">Менің бетім</a>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

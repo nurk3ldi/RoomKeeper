@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Төлемдер{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Төлемдер</h1>
+  <a class="btn btn-primary" href="{{ url_for('payments.create') }}">+ Төлем қосу</a>
+</div>
+
+<div class="card">
+  <form method="get" class="filters">
+    <input type="search" name="q" value="{{ q }}" placeholder="Студент немесе келісімшарт нөмірі" maxlength="120">
+    <select name="status" aria-label="Күйі">
+      <option value="">Кез келген күйі</option>
+      {% for value, label in payment_status_labels.items() %}
+        <option value="{{ value }}"{% if value == status %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="order" value="{{ order }}">
+    <button type="submit" class="btn btn-primary">Іздеу</button>
+    <a class="btn" href="{{ url_for('payments.index') }}">Тазалау</a>
+  </form>
+
+  {% if page.items %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ ui.sort_link('student', 'Студент', sort, order) }}</th>
+            <th>Келісімшарт</th>
+            <th>{{ ui.sort_link('due', 'Төлеу мерзімі', sort, order) }}</th>
+            <th class="num">{{ ui.sort_link('amount', 'Сома', sort, order) }}</th>
+            <th>Күйі</th>
+            <th>{{ ui.sort_link('paid', 'Төленген күні', sort, order) }}</th>
+            <th class="actions">Әрекеттер</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for payment in page.items %}
+            <tr>
+              <td><a href="{{ url_for('students.detail', student_id=payment.contract.student_id) }}">{{ payment.contract.student.full_name }}</a></td>
+              <td><a href="{{ url_for('contracts.detail', contract_id=payment.contract_id) }}">№{{ payment.contract.number }}</a></td>
+              <td>{{ payment.due_date|date }}</td>
+              <td class="num">{{ payment.amount|money }}</td>
+              <td>{{ ui.payment_badge(payment) }}</td>
+              <td>{{ payment.paid_at|date }}</td>
+              <td class="actions">
+                {% if not payment.is_paid %}
+                  {{ ui.post_button(url_for('payments.mark_paid', payment_id=payment.id, next=request.full_path), 'Төленді', 'btn btn-small btn-success') }}
+                {% endif %}
+                <a class="btn btn-small" href="{{ url_for('payments.edit', payment_id=payment.id, next=request.full_path) }}">Өзгерту</a>
+                {{ ui.post_button(url_for('payments.delete', payment_id=payment.id, next=request.full_path), 'Өшіру', 'btn btn-small btn-danger', 'Төлемді өшіресіз бе?') }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="empty">Төлемдер табылмады.</p>
+  {% endif %}
+  {{ ui.pagination(page) }}
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% set heading = 'Бөлмені өзгерту' if room else 'Жаңа бөлме' %}
+{% block title %}{{ heading }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>{{ heading }}</h1>
+</div>
+
+<div class="card card-form">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="field-row">
+      {{ ui.field(form.number, hint="Мысалы: 101 немесе 2-A") }}
+      {{ ui.field(form.floor) }}
+    </div>
+    <div class="field-row">
+      {{ ui.field(form.capacity, hint="1-ден 6-ға дейін") }}
+      {{ ui.field(form.monthly_price) }}
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Сақтау</button>
+      <a class="btn" href="{{ url_for('rooms.detail', room_id=room.id) if room else url_for('rooms.index') }}">Болдырмау</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Бөлмелер{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Бөлмелер</h1>
+  {% if current_user.is_admin %}
+    <a class="btn btn-primary" href="{{ url_for('rooms.create') }}">+ Бөлме қосу</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <form method="get" class="filters">
+    <input type="search" name="q" value="{{ q }}" placeholder="Бөлме нөмірі бойынша іздеу" maxlength="10">
+    <select name="floor" aria-label="Қабат">
+      <option value="">Барлық қабат</option>
+      {% for value in floors %}
+        <option value="{{ value }}"{% if value == floor %} selected{% endif %}>{{ value }}-қабат</option>
+      {% endfor %}
+    </select>
+    <select name="availability" aria-label="Толтырылуы">
+      <option value="">Кез келген күйі</option>
+      <option value="free"{% if availability == 'free' %} selected{% endif %}>Бос орны бар</option>
+      <option value="full"{% if availability == 'full' %} selected{% endif %}>Толық</option>
+      <option value="empty"{% if availability == 'empty' %} selected{% endif %}>Бос бөлме</option>
+    </select>
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="order" value="{{ order }}">
+    <button type="submit" class="btn btn-primary">Іздеу</button>
+    <a class="btn" href="{{ url_for('rooms.index') }}">Тазалау</a>
+  </form>
+
+  {% if page.items %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ ui.sort_link('number', 'Бөлме', sort, order) }}</th>
+            <th>{{ ui.sort_link('floor', 'Қабат', sort, order) }}</th>
+            <th>{{ ui.sort_link('capacity', 'Орын саны', sort, order) }}</th>
+            <th>{{ ui.sort_link('occupied', 'Толтырылуы', sort, order) }}</th>
+            <th>Бос орын</th>
+            <th class="num">{{ ui.sort_link('price', 'Айлық баға', sort, order) }}</th>
+            {% if current_user.is_admin %}<th class="actions">Әрекеттер</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for room in page.items %}
+            <tr>
+              <td><a href="{{ url_for('rooms.detail', room_id=room.id) }}">№{{ room.number }}</a></td>
+              <td>{{ room.floor }}</td>
+              <td>{{ room.capacity }}</td>
+              <td>{{ ui.occupancy(room) }}</td>
+              <td>
+                {% if room.is_full %}
+                  <span class="badge badge-full">Толық</span>
+                {% else %}
+                  <span class="badge badge-free">{{ room.free_places }} бос</span>
+                {% endif %}
+              </td>
+              <td class="num">{{ room.monthly_price|money }}</td>
+              {% if current_user.is_admin %}
+                <td class="actions">
+                  <a class="btn btn-small" href="{{ url_for('rooms.edit', room_id=room.id) }}">Өзгерту</a>
+                  {{ ui.post_button(url_for('rooms.delete', room_id=room.id), 'Өшіру', 'btn btn-small btn-danger', '№' ~ room.number ~ ' бөлмені өшіресіз бе?') }}
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="empty">Бөлмелер табылмады.</p>
+  {% endif %}
+  {{ ui.pagination(page) }}
+</div>
+{% endblock %}

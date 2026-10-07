@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Келісімшарт №{{ contract.number }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Келісімшарт №{{ contract.number }} {{ ui.contract_badge(contract) }}</h1>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('contracts.index') }}">← Тізімге</a>
+    <a class="btn" href="{{ url_for('contracts.edit', contract_id=contract.id) }}">Өзгерту</a>
+    {{ ui.post_button(url_for('contracts.delete', contract_id=contract.id), 'Өшіру', 'btn btn-danger', '№' ~ contract.number ~ ' келісімшарт төлемдерімен бірге өшіріледі. Жалғастырасыз ба?') }}
+  </div>
+</div>
+
+<div class="columns">
+  <section class="card">
+    <h2>Мәліметтер</h2>
+    <dl class="details">
+      <dt>Студент</dt>
+      <dd><a href="{{ url_for('students.detail', student_id=contract.student_id) }}">{{ contract.student.full_name }}</a></dd>
+      <dt>Мерзімі</dt><dd>{{ contract.start_date|date }} – {{ contract.end_date|date }}</dd>
+      <dt>Айлық төлем</dt><dd>{{ contract.monthly_fee|money }}</dd>
+      <dt>Төленді</dt><dd>{{ contract.total_paid|money }} / {{ contract.total_due|money }}</dd>
+      <dt>Қарыз</dt>
+      <dd>{% if contract.debt %}<strong>{{ contract.debt|money }}</strong>{% else %}жоқ{% endif %}</dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Келісімшарт файлы</h2>
+    {% if contract.pdf_filename %}
+      <p>{{ contract.pdf_original_name }}</p>
+      <div class="form-actions">
+        <a class="btn btn-primary" href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">PDF ашу</a>
+        {{ ui.post_button(url_for('contracts.delete_pdf', contract_id=contract.id), 'Файлды өшіру', 'btn btn-danger', 'Келісімшарт файлын өшіресіз бе?') }}
+      </div>
+    {% else %}
+      <p class="muted">PDF файл жүктелмеген.</p>
+      <a class="btn" href="{{ url_for('contracts.edit', contract_id=contract.id) }}">Файл жүктеу</a>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <div class="page-head">
+    <h2>Төлемдер</h2>
+    <a class="btn btn-small" href="{{ url_for('payments.create', contract_id=contract.id, next=request.path) }}">+ Төлем қосу</a>
+  </div>
+  {{ ui.payments_table(contract.payments, manage=true) }}
+</section>
+{% endblock %}

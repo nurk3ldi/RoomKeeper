@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% set heading = 'Төлемді өзгерту' if payment else 'Жаңа төлем' %}
+{% block title %}{{ heading }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>{{ heading }}</h1>
+</div>
+
+<div class="card card-form">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {{ ui.field(form.contract_id) }}
+    <div class="field-row">
+      {{ ui.field(form.amount) }}
+      {{ ui.field(form.due_date) }}
+    </div>
+    {{ ui.field(form.paid_at, hint="Төлем әлі түспесе, бос қалдырыңыз.") }}
+    {{ ui.field(form.comment) }}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Сақтау</button>
+      <a class="btn" href="{{ cancel_url }}">Болдырмау</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

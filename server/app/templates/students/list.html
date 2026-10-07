@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Студенттер{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Студенттер</h1>
+  <a class="btn btn-primary" href="{{ url_for('students.create') }}">+ Студент қосу</a>
+</div>
+
+<div class="card">
+  <form method="get" class="filters">
+    <input type="search" name="q" value="{{ q }}" placeholder="Аты-жөні, email немесе телефон" maxlength="120">
+    <select name="room" aria-label="Бөлме">
+      <option value="">Барлық бөлме</option>
+      <option value="none"{% if room == 'none' %} selected{% endif %}>Бөлмесіз</option>
+      {% for item in rooms %}
+        <option value="{{ item.id }}"{% if room == item.id|string %} selected{% endif %}>№{{ item.number }}</option>
+      {% endfor %}
+    </select>
+    <select name="course" aria-label="Курс">
+      <option value="">Барлық курс</option>
+      {% for value in range(1, 7) %}
+        <option value="{{ value }}"{% if value == course %} selected{% endif %}>{{ value }}-курс</option>
+      {% endfor %}
+    </select>
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="order" value="{{ order }}">
+    <button type="submit" class="btn btn-primary">Іздеу</button>
+    <a class="btn" href="{{ url_for('students.index') }}">Тазалау</a>
+  </form>
+
+  {% if page.items %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ ui.sort_link('name', 'Аты-жөні', sort, order) }}</th>
+            <th>{{ ui.sort_link('course', 'Курс', sort, order) }}</th>
+            <th>Бөлме</th>
+            <th>Телефон</th>
+            <th>Email</th>
+            <th>{{ ui.sort_link('created', 'Тіркелген', sort, order) }}</th>
+            <th class="actions">Әрекеттер</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in page.items %}
+            <tr>
+              <td><a href="{{ url_for('students.detail', student_id=student.id) }}">{{ student.full_name }}</a></td>
+              <td>{{ student.course }}</td>
+              <td>
+                {% if student.room %}
+                  <a href="{{ url_for('rooms.detail', room_id=student.room.id) }}">№{{ student.room.number }}</a>
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+              <td>{{ student.phone }}</td>
+              <td>{{ student.email }}</td>
+              <td>{{ student.created_at|date }}</td>
+              <td class="actions">
+                <a class="btn btn-small" href="{{ url_for('students.edit', student_id=student.id) }}">Өзгерту</a>
+                {{ ui.post_button(url_for('students.delete', student_id=student.id), 'Өшіру', 'btn btn-small btn-danger', student.full_name ~ ' және оның келісімшарттары мен төлемдері өшіріледі. Жалғастырасыз ба?') }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="empty">Студенттер табылмады.</p>
+  {% endif %}
+  {{ ui.pagination(page) }}
+</div>
+{% endblock %}

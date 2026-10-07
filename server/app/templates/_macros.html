@@ -1,0 +1,121 @@
+{# Shared UI pieces. Import with: {% import "_macros.html" as ui with context %} #}
+
+{% macro field(f, hint=None) %}
+  <div class="field{% if f.errors %} has-error{% endif %}">
+    {{ f.label }}
+    {{ f(**kwargs) }}
+    {% if hint %}<small class="hint">{{ hint }}</small>{% endif %}
+    {% for error in f.errors %}<small class="error">{{ error }}</small>{% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro checkbox(f) %}
+  <div class="field field-check">
+    <label>{{ f() }} {{ f.label.text }}</label>
+  </div>
+{% endmacro %}
+
+{# POST-only action (delete, mark paid, ...) with its CSRF token. #}
+{% macro post_button(url, label, css="btn btn-small", confirm=None) %}
+  <form method="post" action="{{ url }}" class="inline"
+        {% if confirm %}onsubmit='return confirm({{ confirm|tojson }})'{% endif %}>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="{{ css }}">{{ label }}</button>
+  </form>
+{% endmacro %}
+
+{# Link to the current list with some query parameters replaced. #}
+{% macro list_url() %}{{ url_for(request.endpoint, **dict(request.args.to_dict(), **kwargs)) }}{% endmacro %}
+
+{% macro sort_link(key, label, sort, order) %}
+  {% set next_order = 'desc' if sort == key and order == 'asc' else 'asc' %}
+  <a class="sort" href="{{ list_url(sort=key, order=next_order, page=1) }}">
+    {{ label }}{% if sort == key %} {{ '▲' if order == 'asc' else '▼' }}{% endif %}
+  </a>
+{% endmacro %}
+
+{% macro pagination(page) %}
+  <div class="list-footer">
+    <span class="muted">Барлығы: {{ page.total }}</span>
+    {% if page.pages > 1 %}
+      <nav class="pagination" aria-label="Беттер">
+        {% if page.has_prev %}
+          <a href="{{ list_url(page=page.prev_num) }}">← Алдыңғы</a>
+        {% else %}
+          <span class="disabled">← Алдыңғы</span>
+        {% endif %}
+        {% for number in page.iter_pages() %}
+          {% if not number %}
+            <span class="disabled">…</span>
+          {% elif number == page.page %}
+            <span class="current">{{ number }}</span>
+          {% else %}
+            <a href="{{ list_url(page=number) }}">{{ number }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if page.has_next %}
+          <a href="{{ list_url(page=page.next_num) }}">Келесі →</a>
+        {% else %}
+          <span class="disabled">Келесі →</span>
+        {% endif %}
+      </nav>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% macro occupancy(room) %}
+  <div class="occupancy">
+    <div class="meter"><span class="{{ 'full' if room.is_full }}" style="width: {{ room.occupancy_percent }}%"></span></div>
+    <span>{{ room.occupied }} / {{ room.capacity }}</span>
+  </div>
+{% endmacro %}
+
+{% macro payment_badge(payment) %}
+  <span class="badge badge-{{ payment.status }}">{{ payment_status_labels[payment.status] }}</span>
+{% endmacro %}
+
+{% macro contract_badge(contract) %}
+  <span class="badge badge-{{ contract.state }}">{{ contract_state_labels[contract.state] }}</span>
+{% endmacro %}
+
+{# Payments of one contract; `manage` adds the admin actions. #}
+{% macro payments_table(payments, manage=False) %}
+  {% if payments %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Төлеу мерзімі</th>
+            <th class="num">Сома</th>
+            <th>Күйі</th>
+            <th>Төленген күні</th>
+            <th>Түсініктеме</th>
+            {% if manage %}<th class="actions">Әрекеттер</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for payment in payments %}
+            <tr>
+              <td>{{ payment.due_date|date }}</td>
+              <td class="num">{{ payment.amount|money }}</td>
+              <td>{{ payment_badge(payment) }}</td>
+              <td>{{ payment.paid_at|date }}</td>
+              <td>{{ payment.comment or '—' }}</td>
+              {% if manage %}
+                <td class="actions">
+                  {% if not payment.is_paid %}
+                    {{ post_button(url_for('payments.mark_paid', payment_id=payment.id, next=request.path), 'Төленді', 'btn btn-small btn-success') }}
+                  {% endif %}
+                  <a class="btn btn-small" href="{{ url_for('payments.edit', payment_id=payment.id, next=request.path) }}">Өзгерту</a>
+                  {{ post_button(url_for('payments.delete', payment_id=payment.id, next=request.path), 'Өшіру', 'btn btn-small btn-danger', 'Төлемді өшіресіз бе?') }}
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="empty">Төлемдер жоқ.</p>
+  {% endif %}
+{% endmacro %}

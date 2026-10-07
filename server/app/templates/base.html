@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="kk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} — RoomKeeper</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  {% macro nav_link(endpoint, label, blueprint) %}
+    <a href="{{ url_for(endpoint) }}"{% if request.blueprint == blueprint and request.endpoint != 'main.profile' %} class="active"{% endif %}>{{ label }}</a>
+  {% endmacro %}
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{{ url_for('main.dashboard') }}">RoomKeeper</a>
+      {% if current_user.is_authenticated %}
+        <nav class="nav">
+          {{ nav_link('main.dashboard', 'Басты бет', 'main') }}
+          {{ nav_link('rooms.index', 'Бөлмелер', 'rooms') }}
+          {% if current_user.is_admin %}
+            {{ nav_link('students.index', 'Студенттер', 'students') }}
+            {{ nav_link('contracts.index', 'Келісімшарттар', 'contracts') }}
+            {{ nav_link('payments.index', 'Төлемдер', 'payments') }}
+            {{ nav_link('users.index', 'Пайдаланушылар', 'users') }}
+          {% endif %}
+        </nav>
+        <div class="account">
+          <a href="{{ url_for('main.profile') }}"{% if request.endpoint == 'main.profile' %} class="active"{% endif %}>
+            {{ current_user.username }}
+            <span class="role">{{ role_labels[current_user.role] }}</span>
+          </a>
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-ghost btn-small">Шығу</button>
+          </form>
+        </div>
+      {% else %}
+        <nav class="nav nav-right">
+          <a href="{{ url_for('auth.login') }}">Кіру</a>
+          <a href="{{ url_for('auth.register') }}">Тіркелу</a>
+        </nav>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">RoomKeeper · Жатақхана орындарын басқару жүйесі</footer>
+</body>
+</html>

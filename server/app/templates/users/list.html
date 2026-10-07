@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Пайдаланушылар{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Пайдаланушылар</h1>
+</div>
+
+<div class="card">
+  <form method="get" class="filters">
+    <input type="search" name="q" value="{{ q }}" placeholder="Логин немесе email" maxlength="120">
+    <select name="role" aria-label="Рөлі">
+      <option value="">Барлық рөл</option>
+      {% for value, label in role_labels.items() %}
+        <option value="{{ value }}"{% if value == role %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">Іздеу</button>
+    <a class="btn" href="{{ url_for('users.index') }}">Тазалау</a>
+  </form>
+
+  {% if page.items %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Логин</th><th>Email</th><th>Рөлі</th><th>Студент</th><th>Тіркелген</th>
+            <th class="actions">Әрекеттер</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in page.items %}
+            <tr>
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td><span class="badge badge-{{ user.role }}">{{ role_labels[user.role] }}</span></td>
+              <td>
+                {% if user.student %}
+                  <a href="{{ url_for('students.detail', student_id=user.student.id) }}">{{ user.student.full_name }}</a>
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+              <td>{{ user.created_at|date }}</td>
+              <td class="actions">
+                {% if user.id == current_user.id %}
+                  <span class="muted">бұл — сіз</span>
+                {% else %}
+                  {{ ui.post_button(url_for('users.toggle_role', user_id=user.id), 'Пайдаланушы ету' if user.is_admin else 'Әкімші ету') }}
+                  {{ ui.post_button(url_for('users.delete', user_id=user.id), 'Өшіру', 'btn btn-small btn-danger', user.username ~ ' аккаунтын өшіресіз бе?') }}
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="empty">Пайдаланушылар табылмады.</p>
+  {% endif %}
+  {{ ui.pagination(page) }}
+</div>
+{% endblock %}

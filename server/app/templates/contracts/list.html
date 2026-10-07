@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Келісімшарттар{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Келісімшарттар</h1>
+  <a class="btn btn-primary" href="{{ url_for('contracts.create') }}">+ Келісімшарт қосу</a>
+</div>
+
+<div class="card">
+  <form method="get" class="filters">
+    <input type="search" name="q" value="{{ q }}" placeholder="Келісімшарт нөмірі немесе студент" maxlength="120">
+    <select name="state" aria-label="Күйі">
+      <option value="">Кез келген күйі</option>
+      {% for value, label in contract_state_labels.items() %}
+        <option value="{{ value }}"{% if value == state %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="order" value="{{ order }}">
+    <button type="submit" class="btn btn-primary">Іздеу</button>
+    <a class="btn" href="{{ url_for('contracts.index') }}">Тазалау</a>
+  </form>
+
+  {% if page.items %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ ui.sort_link('number', 'Нөмірі', sort, order) }}</th>
+            <th>{{ ui.sort_link('student', 'Студент', sort, order) }}</th>
+            <th>{{ ui.sort_link('start', 'Басталуы', sort, order) }}</th>
+            <th>{{ ui.sort_link('end', 'Аяқталуы', sort, order) }}</th>
+            <th class="num">{{ ui.sort_link('fee', 'Айлық төлем', sort, order) }}</th>
+            <th>Күйі</th>
+            <th>PDF</th>
+            <th class="actions">Әрекеттер</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for contract in page.items %}
+            <tr>
+              <td><a href="{{ url_for('contracts.detail', contract_id=contract.id) }}">№{{ contract.number }}</a></td>
+              <td><a href="{{ url_for('students.detail', student_id=contract.student_id) }}">{{ contract.student.full_name }}</a></td>
+              <td>{{ contract.start_date|date }}</td>
+              <td>{{ contract.end_date|date }}</td>
+              <td class="num">{{ contract.monthly_fee|money }}</td>
+              <td>{{ ui.contract_badge(contract) }}</td>
+              <td>
+                {% if contract.pdf_filename %}
+                  <a href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">Ашу</a>
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+              <td class="actions">
+                <a class="btn btn-small" href="{{ url_for('contracts.edit', contract_id=contract.id) }}">Өзгерту</a>
+                {{ ui.post_button(url_for('contracts.delete', contract_id=contract.id), 'Өшіру', 'btn btn-small btn-danger', '№' ~ contract.number ~ ' келісімшарт төлемдерімен бірге өшіріледі. Жалғастырасыз ба?') }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="empty">Келісімшарттар табылмады.</p>
+  {% endif %}
+  {{ ui.pagination(page) }}
+</div>
+{% endblock %}

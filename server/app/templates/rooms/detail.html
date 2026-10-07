@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Бөлме №{{ room.number }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Бөлме №{{ room.number }}</h1>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('rooms.index') }}">← Тізімге</a>
+    {% if current_user.is_admin %}
+      <a class="btn" href="{{ url_for('rooms.edit', room_id=room.id) }}">Өзгерту</a>
+      {{ ui.post_button(url_for('rooms.delete', room_id=room.id), 'Өшіру', 'btn btn-danger', '№' ~ room.number ~ ' бөлмені өшіресіз бе?') }}
+    {% endif %}
+  </div>
+</div>
+
+<div class="columns">
+  <section class="card">
+    <h2>Мәліметтер</h2>
+    <dl class="details">
+      <dt>Қабат</dt><dd>{{ room.floor }}</dd>
+      <dt>Орын саны</dt><dd>{{ room.capacity }}</dd>
+      <dt>Бос емес</dt><dd>{{ room.occupied }}</dd>
+      <dt>Бос орын</dt><dd>{{ room.free_places }}</dd>
+      <dt>Айлық баға</dt><dd>{{ room.monthly_price|money }}</dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Толтырылуы — {{ room.occupancy_percent }}%</h2>
+    <div class="meter-wide">{{ ui.occupancy(room) }}</div>
+    <p class="muted">
+      {% if room.is_full %}Бөлме толық.{% else %}{{ room.free_places }} бос орын бар.{% endif %}
+    </p>
+  </section>
+</div>
+
+{% if current_user.is_admin %}
+  <section class="card">
+    <div class="page-head">
+      <h2>Тұратын студенттер</h2>
+      {% if not room.is_full %}
+        <a class="btn btn-small" href="{{ url_for('students.create', room_id=room.id) }}">+ Студент қосу</a>
+      {% endif %}
+    </div>
+    {% if room.students %}
+      <table>
+        <thead>
+          <tr><th>Аты-жөні</th><th>Курс</th><th>Телефон</th><th>Email</th></tr>
+        </thead>
+        <tbody>
+          {% for student in room.students %}
+            <tr>
+              <td><a href="{{ url_for('students.detail', student_id=student.id) }}">{{ student.full_name }}</a></td>
+              <td>{{ student.course }}</td>
+              <td>{{ student.phone }}</td>
+              <td>{{ student.email }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="empty">Бұл бөлмеде әзірге ешкім тұрмайды.</p>
+    {% endif %}
+  </section>
+{% endif %}
+{% endblock %}

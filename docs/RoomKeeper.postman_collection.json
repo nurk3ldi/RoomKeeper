@@ -1,0 +1,98 @@
+{
+  "info": {
+    "name": "RoomKeeper API",
+    "description": "RoomKeeper жатақхана жүйесінің JSON API-і. Алдымен «Login (admin)» сұранысын жіберіңіз — Postman сессия cookie-ін өзі сақтайды. Сұраныстарды ретімен орындасаңыз, «Create room» жасаған бөлме келесі сұраныстарда қолданылады.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "roomId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('db is ok', () => pm.expect(pm.response.json().db).to.eql('ok'));"] } }],
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/health" }
+    },
+    {
+      "name": "Login (admin)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('role is admin', () => pm.expect(pm.response.json().user.role).to.eql('admin'));"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"login\": \"admin\",\n  \"password\": \"Admin123!\"\n}" },
+        "url": "{{baseUrl}}/api/auth/login"
+      }
+    },
+    {
+      "name": "Current user",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }],
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/me" }
+    },
+    {
+      "name": "Stats (occupancy + payments)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('has occupancy', () => pm.expect(pm.response.json()).to.have.property('occupancy_percent'));"] } }],
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/stats" }
+    },
+    {
+      "name": "List rooms (free places only)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('every room has a free place', () => pm.response.json().items.forEach(r => pm.expect(r.free_places).to.be.above(0)));"] } }],
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/rooms?available=1&page=1" }
+    },
+    {
+      "name": "Create room",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('201 Created', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('roomId', pm.response.json().id);"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"number\": \"API-1\",\n  \"floor\": 4,\n  \"capacity\": 3,\n  \"monthly_price\": 27000\n}" },
+        "url": "{{baseUrl}}/api/rooms"
+      }
+    },
+    {
+      "name": "Create room (validation error)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('400 Bad Request', () => pm.response.to.have.status(400));", "pm.test('names the bad fields', () => pm.expect(pm.response.json().fields).to.have.keys(['capacity', 'floor']));"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"number\": \"API-2\",\n  \"floor\": 0,\n  \"capacity\": 99,\n  \"monthly_price\": 27000\n}" },
+        "url": "{{baseUrl}}/api/rooms"
+      }
+    },
+    {
+      "name": "Get room",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }],
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/rooms/{{roomId}}" }
+    },
+    {
+      "name": "Update room",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('capacity changed', () => pm.expect(pm.response.json().capacity).to.eql(4));"] } }],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"capacity\": 4,\n  \"monthly_price\": 26000\n}" },
+        "url": "{{baseUrl}}/api/rooms/{{roomId}}"
+      }
+    },
+    {
+      "name": "Delete room",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"] } }],
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/api/rooms/{{roomId}}" }
+    },
+    {
+      "name": "List students (search)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }],
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/students?q=example.kz&page=1" }
+    },
+    {
+      "name": "List payments (overdue)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));", "pm.test('only overdue', () => pm.response.json().items.forEach(p => pm.expect(p.status).to.eql('overdue')));"] } }],
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/payments?status=overdue" }
+    },
+    {
+      "name": "Logout",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] } }],
+      "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/logout" }
+    }
+  ]
+}

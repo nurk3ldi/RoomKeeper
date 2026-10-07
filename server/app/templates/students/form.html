@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% set heading = 'Студентті өзгерту' if student else 'Жаңа студент' %}
+{% block title %}{{ heading }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>{{ heading }}</h1>
+</div>
+
+<div class="card card-form">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {{ ui.field(form.full_name) }}
+    <div class="field-row">
+      {{ ui.field(form.email, type="email") }}
+      {{ ui.field(form.phone, type="tel", hint="Мысалы: +77011234567") }}
+    </div>
+    <div class="field-row">
+      {{ ui.field(form.course, hint="1-ден 6-ға дейін") }}
+      {{ ui.field(form.room_id, hint="Жақшада: бос емес / барлық орын") }}
+    </div>
+    {{ ui.field(form.user_id, hint="Байланысқан пайдаланушы өз келісімшарты мен төлемдерін «Менің бетім» бөлімінен көреді.") }}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Сақтау</button>
+      <a class="btn" href="{{ url_for('students.detail', student_id=student.id) if student else url_for('students.index') }}">Болдырмау</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

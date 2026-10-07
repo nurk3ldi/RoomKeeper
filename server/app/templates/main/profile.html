@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Менің бетім{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Менің бетім</h1>
+</div>
+
+<div class="columns">
+  <section class="card">
+    <h2>Аккаунт</h2>
+    <dl class="details">
+      <dt>Логин</dt><dd>{{ current_user.username }}</dd>
+      <dt>Email</dt><dd>{{ current_user.email }}</dd>
+      <dt>Рөлі</dt><dd><span class="badge badge-{{ current_user.role }}">{{ role_labels[current_user.role] }}</span></dd>
+      <dt>Тіркелген күні</dt><dd>{{ current_user.created_at|date }}</dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Жатақхана</h2>
+    {% if student %}
+      <dl class="details">
+        <dt>Студент</dt><dd>{{ student.full_name }}</dd>
+        <dt>Курс</dt><dd>{{ student.course }}</dd>
+        <dt>Телефон</dt><dd>{{ student.phone }}</dd>
+        <dt>Бөлме</dt>
+        <dd>
+          {% if student.room %}
+            <a href="{{ url_for('rooms.detail', room_id=student.room.id) }}">№{{ student.room.number }}</a>,
+            {{ student.room.floor }}-қабат
+          {% else %}
+            <span class="muted">берілмеген</span>
+          {% endif %}
+        </dd>
+      </dl>
+    {% else %}
+      <p class="muted">Аккаунтыңыз студент жазбасымен байланыстырылмаған. Келісімшарт пен төлемдерді көру үшін әкімшіге хабарласыңыз.</p>
+    {% endif %}
+  </section>
+</div>
+
+{% if student %}
+  {% for contract in student.contracts %}
+    <section class="card">
+      <div class="page-head">
+        <h2>Келісімшарт №{{ contract.number }} {{ ui.contract_badge(contract) }}</h2>
+        {% if contract.pdf_filename %}
+          <a class="btn btn-small" href="{{ url_for('contracts.download', contract_id=contract.id) }}" target="_blank" rel="noopener">PDF ашу</a>
+        {% endif %}
+      </div>
+      <p class="muted">
+        {{ contract.start_date|date }} – {{ contract.end_date|date }} ·
+        айына {{ contract.monthly_fee|money }} ·
+        төленді {{ contract.total_paid|money }} / {{ contract.total_due|money }}
+        {% if contract.debt %}· <strong>қарыз {{ contract.debt|money }}</strong>{% endif %}
+      </p>
+      {{ ui.payments_table(contract.payments) }}
+    </section>
+  {% else %}
+    <section class="card"><p class="empty">Келісімшарттар жоқ.</p></section>
+  {% endfor %}
+{% endif %}
+{% endblock %}
